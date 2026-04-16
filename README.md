@@ -4,7 +4,7 @@ Shared skill registry managed by [Scribe](https://github.com/Naoray/scribe).
 
 ## Setup
 
-    scribe registry connect Naoray/skill
+    scribe registry connect Naoray/skills
 
 ## Sync
 
