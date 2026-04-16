@@ -16,7 +16,7 @@ Help me set up the Naoray/skills registry (https://github.com/Naoray/skills) for
 
 3. Ask me whether I want to cherry-pick skills or install the whole catalog:
    - Cherry-pick (default): run `scribe browse --registry Naoray/skills`, show me the list, and install my picks with `scribe add Naoray/skills:<name> --yes`.
-   - Whole catalog: `scribe registry connect Naoray/skills --install-all` (skip step 2 if you run this).
+   - Whole catalog: `scribe registry connect Naoray/skills --install-all` (skip step 2 if you run this; requires scribe v0.9.0-beta.1+).
 
 4. Confirm the final state with `scribe list`.
 
@@ -69,13 +69,13 @@ Sync only updates what you've already installed. It never adds new skills behind
 
 ## Shortcut: install the whole catalog
 
-Prefer everything over cherry-picking? Once [scribe#104](https://github.com/Naoray/scribe/issues/104) ships:
+Prefer everything over cherry-picking?
 
 ```bash
 scribe registry connect Naoray/skills --install-all
 ```
 
-One command, connected and fully installed. Optional — skipping it and opting in skill by skill is the recommended path.
+One command, connected and fully installed. Optional — skipping it and opting in skill by skill is the recommended path. Requires scribe v0.9.0-beta.1 or later.
 
 ## New to scribe?
 
