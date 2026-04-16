@@ -1,16 +1,35 @@
-# Naoray — Skill Registry
+# Naoray's Skills
 
-Shared skill registry managed by [Scribe](https://github.com/Naoray/scribe).
+My personal registry of Claude Code, Cursor, and Codex skills.
+Built with [Scribe](https://github.com/Naoray/scribe).
 
-## Setup
+## Connect in one command
 
-    scribe registry connect Naoray/skills
+```bash
+scribe registry connect Naoray/skills
+scribe sync
+```
 
-## Sync
+Scribe stores the canonical copy in `~/.scribe/skills/` and links it into every AI tool you already use — Claude Code, Cursor, Codex, Gemini.
 
-    scribe sync
+## What's inside
 
-## Adding skills
+Skills I actually reach for. The catalog lives in [`scribe.yaml`](./scribe.yaml).
 
-Edit `scribe.yaml` to add or update skills, then push to this repo.
-Teammates run `scribe sync` to pick up changes.
+Browse everything:
+
+```bash
+scribe browse --registry Naoray/skills
+```
+
+## Stay in sync
+
+When I push updates, pull them:
+
+```bash
+scribe sync
+```
+
+## New to scribe?
+
+Start here → [Naoray/scribe](https://github.com/Naoray/scribe)
