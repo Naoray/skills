@@ -31,3 +31,5 @@ catalog:
       source: github:Artistfy/hq@main
     - name: cleanup
       source: github:Artistfy/hq@main
+    - name: create-changelog-pr
+      source: github:Artistfy/hq@main
