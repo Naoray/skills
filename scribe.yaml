@@ -42,3 +42,5 @@ catalog:
       source: github:Artistfy/hq@main
     - name: visual-review
       source: github:Artistfy/hq@main
+    - name: visual-review-cli
+      source: github:Artistfy/hq@main
