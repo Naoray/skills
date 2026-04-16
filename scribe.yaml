@@ -23,3 +23,5 @@ catalog:
     - name: meeting
       source: github:Naoray/skills@main
       path: skills/meeting
+    - name: recap
+      source: github:Artistfy/hq@main
