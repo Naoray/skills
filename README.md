@@ -3,6 +3,31 @@
 My personal registry of Claude Code, Cursor, and Codex skills.
 Built with [Scribe](https://github.com/Naoray/scribe).
 
+## Let your AI set it up
+
+Paste this into Claude Code, Cursor, Codex, or any agentic LLM. Works whether scribe is installed or not:
+
+```
+Help me set up the Naoray/skills registry (https://github.com/Naoray/skills) for my AI coding tools.
+
+1. Check if scribe is installed: run `scribe --version`.
+   - If missing on macOS: `brew install Naoray/tap/scribe`
+   - Otherwise: `go install github.com/Naoray/scribe@latest`
+   - Also verify `gh auth status` — scribe uses the GitHub CLI for auth.
+
+2. Connect the registry: `scribe registry connect Naoray/skills`.
+
+3. Ask me whether I want to cherry-pick skills or install the whole catalog:
+   - Cherry-pick (default): run `scribe browse --registry Naoray/skills`, show me the list, and install my picks with `scribe add Naoray/skills:<name> --yes`.
+   - Whole catalog: `scribe registry connect Naoray/skills --install-all` (skip step 2 if you run this).
+
+4. Confirm the final state with `scribe list`.
+
+Pause before any install or connect command so I can approve.
+```
+
+Prefer the manual path? Keep reading.
+
 ## Connect
 
 ```bash
