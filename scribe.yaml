@@ -20,3 +20,6 @@ catalog:
     - name: record
       source: github:Naoray/skills@main
       path: skills/record
+    - name: meeting
+      source: github:Naoray/skills@main
+      path: skills/meeting
