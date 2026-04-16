@@ -1,0 +1,13 @@
+apiVersion: scribe/v1
+kind: Registry
+team:
+  name: "naoray"
+  description: "Naoray dev team skill stack"
+
+# Add skills here. Example:
+# catalog:
+#   - name: my-skill
+#     source: "github:owner/repo@version"
+#     author: username
+
+catalog: []
