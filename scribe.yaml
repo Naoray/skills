@@ -5,57 +5,40 @@ team:
     description: Naoray dev team skill stack
 catalog:
     - name: scribe-agent
-      path: skills/scribe-agent
+      source: github:Naoray/skills@main
       author: naoray
       description: Agent skill that tells AI assistants how to use the scribe CLI to install, list, sync, and manage skills.
     - name: plan-my-day
       source: github:Naoray/skills@main
-      path: skills/plan-my-day
     - name: apple-calendar
       source: github:Naoray/skills@main
-      path: skills/apple-calendar
     - name: evaluate-day
       source: github:Naoray/skills@main
-      path: skills/evaluate-day
     - name: session-plan
       source: github:Naoray/skills@main
-      path: skills/session-plan
     - name: record
       source: github:Naoray/skills@main
-      path: skills/record
     - name: meeting
       source: github:Naoray/skills@main
-      path: skills/meeting
     - name: recap
       source: github:Naoray/skills@main
-      path: skills/recap
     - name: recap-report
       source: github:Naoray/skills@main
-      path: skills/recap-report
     - name: dev-browser
       source: github:Naoray/skills@main
-      path: skills/dev-browser
     - name: cleanup
       source: github:Naoray/skills@main
-      path: skills/cleanup
     - name: create-changelog-pr
       source: github:Naoray/skills@main
-      path: skills/create-changelog-pr
     - name: update-changelog
       source: github:Naoray/skills@main
-      path: skills/update-changelog
     - name: flow-review
       source: github:Naoray/skills@main
-      path: skills/flow-review
     - name: research-mode
       source: github:Naoray/skills@main
-      path: skills/research-mode
     - name: visual-review
       source: github:Naoray/skills@main
-      path: skills/visual-review
     - name: visual-review-cli
       source: github:Naoray/skills@main
-      path: skills/visual-review-cli
     - name: xray
       source: github:Naoray/skills@main
-      path: skills/xray
