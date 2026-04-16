@@ -10,10 +10,7 @@ Paste this into Claude Code, Cursor, Codex, or any agentic LLM. Works whether sc
 ```
 Help me set up the Naoray/skills registry (https://github.com/Naoray/skills) for my AI coding tools.
 
-1. Check if scribe is installed: run `scribe --version`.
-   - If missing on macOS: `brew install Naoray/tap/scribe`
-   - Otherwise: `go install github.com/Naoray/scribe@latest`
-   - Also verify `gh auth status` — scribe uses the GitHub CLI for auth.
+1. Check if scribe is installed: run `scribe --version`. If it's missing, follow the install instructions at https://github.com/Naoray/scribe and make sure `gh auth status` succeeds — scribe uses the GitHub CLI for auth.
 
 2. Connect the registry: `scribe registry connect Naoray/skills`.
 
