@@ -5,7 +5,7 @@ team:
     description: Naoray dev team skill stack
 catalog:
     - name: scribe-agent
-      path: scribe-agent
+      path: skills/scribe-agent
       author: naoray
       description: Agent skill that tells AI assistants how to use the scribe CLI to install, list, sync, and manage skills.
     - name: plan-my-day
