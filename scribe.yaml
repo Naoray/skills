@@ -40,3 +40,5 @@ catalog:
       source: github:Artistfy/hq@main
     - name: research-mode
       source: github:Artistfy/hq@main
+    - name: visual-review
+      source: github:Artistfy/hq@main
