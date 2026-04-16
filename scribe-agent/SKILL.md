@@ -5,9 +5,80 @@ description: Use when the user wants to install, list, sync, remove, or manage A
 
 # scribe-agent
 
-## Keep `scribe` current
+===setup-start===
+**Execute this one-shot bootstrap, then use the Edit tool to delete the entire block from `===setup-start===` through `===setup-end===` (inclusive) from this file. A setup block is one-shot — leaving it causes re-runs on every invocation.**
 
-Run `scribe upgrade --check` to see if a new version is available. If the output contains "New version available", ask the user whether to upgrade. If they approve, run `scribe upgrade`, then continue with their request. If already up to date, continue without asking.
+Before running any command in this skill, check that `scribe` is installed and that this skill is registered locally. If either is missing, bootstrap them now.
+
+Step 1 - check for the binary:
+
+```bash
+scribe --version
+```
+
+If the command succeeds, skip to Step 3. If it fails with "command not found" (or similar), run Step 2.
+
+Step 2 - install scribe. Pick the first option that fits the machine; stop on the first success:
+
+```bash
+# macOS Homebrew (preferred on macOS)
+brew install Naoray/tap/scribe
+
+# macOS Apple Silicon binary
+curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_darwin_arm64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
+
+# macOS Intel binary
+curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_darwin_amd64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
+
+# Linux amd64 binary
+curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_linux_amd64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
+
+# Linux arm64 binary
+curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_linux_arm64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
+
+# Go toolchain (works anywhere Go is installed — last resort)
+go install github.com/Naoray/scribe/cmd/scribe@latest
+```
+
+**Windows (PowerShell):** Run this instead — downloads to `$env:USERPROFILE\bin` and adds it to your user PATH:
+
+```powershell
+powershell -Command "
+  \$dest = \"\$env:USERPROFILE\bin\";
+  New-Item -ItemType Directory -Force -Path \$dest | Out-Null;
+  Invoke-WebRequest -Uri 'https://github.com/Naoray/scribe/releases/latest/download/scribe_windows_amd64.zip' -OutFile \"\$env:TEMP\scribe.zip\";
+  Expand-Archive -Path \"\$env:TEMP\scribe.zip\" -DestinationPath \$dest -Force;
+  \$current = [Environment]::GetEnvironmentVariable('PATH','User');
+  if (\$current -notlike \"*\$dest*\") {
+    [Environment]::SetEnvironmentVariable('PATH', \"\$dest;\$current\", 'User')
+  }
+"
+```
+
+After running the Windows command, open a new terminal for PATH to take effect.
+
+Re-run `scribe --version` to confirm. If all options fail, stop and tell the user which one errored and why.
+
+Step 3 - make sure this skill is registered locally so it survives future sessions:
+
+```bash
+scribe list --json
+```
+
+If the output already contains an entry with `"name": "scribe-agent"`, you're done - continue with the user's actual request.
+
+If it does not, install this skill now. First trigger first-run so the `Naoray/scribe` built-in registry is wired up, then install:
+
+```bash
+scribe status --json
+scribe add Naoray/scribe:scribe-agent --yes --json
+scribe list --json
+```
+
+Confirm the final `scribe list --json` includes `scribe-agent`. If anything in this bootstrap fails, report the failing command and its stderr verbatim - do not guess around it.
+
+Once bootstrap succeeds, delete this entire block (both marker lines included) and proceed with the user's request using the command reference below.
+===setup-end===
 
 ## What scribe does
 

@@ -11,6 +11,9 @@ catalog:
     - name: plan-my-day
       source: github:Naoray/skills@main
       path: skills/plan-my-day
+    - name: apple-calendar
+      source: github:Naoray/skills@main
+      path: skills/apple-calendar
     - name: evaluate-day
       source: github:Naoray/skills@main
       path: skills/evaluate-day
@@ -24,25 +27,35 @@ catalog:
       source: github:Naoray/skills@main
       path: skills/meeting
     - name: recap
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/recap
     - name: recap-report
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/recap-report
     - name: dev-browser
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/dev-browser
     - name: cleanup
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/cleanup
     - name: create-changelog-pr
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/create-changelog-pr
     - name: update-changelog
       source: github:Naoray/skills@main
       path: skills/update-changelog
     - name: flow-review
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/flow-review
     - name: research-mode
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/research-mode
     - name: visual-review
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/visual-review
     - name: visual-review-cli
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/visual-review-cli
     - name: xray
-      source: github:Artistfy/hq@main
+      source: github:Naoray/skills@main
+      path: skills/xray

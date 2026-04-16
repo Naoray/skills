@@ -11,6 +11,14 @@ scribe registry connect Naoray/skills
 
 Connecting tells scribe this registry exists. It does not install anything — you choose what you want.
 
+**Want everything at once?** (available once [scribe#104](https://github.com/Naoray/scribe/issues/104) ships)
+
+```bash
+scribe registry connect Naoray/skills --install-all
+```
+
+Connects the registry and installs every skill in the catalog in one command.
+
 ## Browse the catalog
 
 ```bash
