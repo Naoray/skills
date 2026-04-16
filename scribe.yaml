@@ -4,10 +4,8 @@ team:
   name: "naoray"
   description: "Naoray dev team skill stack"
 
-# Add skills here. Example:
-# catalog:
-#   - name: my-skill
-#     source: "github:owner/repo@version"
-#     author: username
-
-catalog: []
+catalog:
+  - name: scribe-agent
+    path: scribe-agent
+    description: "Agent skill that tells AI assistants how to use the scribe CLI to install, list, sync, and manage skills."
+    author: naoray
