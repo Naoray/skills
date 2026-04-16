@@ -38,3 +38,5 @@ catalog:
       path: skills/update-changelog
     - name: flow-review
       source: github:Artistfy/hq@main
+    - name: research-mode
+      source: github:Artistfy/hq@main
