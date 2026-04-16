@@ -36,3 +36,5 @@ catalog:
     - name: update-changelog
       source: github:Naoray/skills@main
       path: skills/update-changelog
+    - name: flow-review
+      source: github:Artistfy/hq@main
