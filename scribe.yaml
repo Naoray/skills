@@ -33,3 +33,6 @@ catalog:
       source: github:Artistfy/hq@main
     - name: create-changelog-pr
       source: github:Artistfy/hq@main
+    - name: update-changelog
+      source: github:Naoray/skills@main
+      path: skills/update-changelog
