@@ -14,3 +14,6 @@ catalog:
     - name: evaluate-day
       source: github:Naoray/skills@main
       path: skills/evaluate-day
+    - name: session-plan
+      source: github:Naoray/skills@main
+      path: skills/session-plan

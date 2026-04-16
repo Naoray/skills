@@ -1,0 +1,5 @@
+{
+  "name": "session-plan",
+  "description": "Generate a focused plan for the upcoming practice/work session based on persistent context in ~/Context/. Use for bass, writing, study, or any discipline that has a tracked learning path.",
+  "user_invocable": true
+}

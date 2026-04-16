@@ -1,0 +1,116 @@
+---
+name: session-plan
+description: Generate a focused plan for the upcoming practice/work session. Reads persistent context in ~/Context/<domain>/ (learning path, progress log, latest measurements) and produces a prioritized session plan that answers "what do I need to worry about right now?" — and just as importantly, what NOT to worry about. Invocable with /session-plan [domain] [optional notes].
+---
+
+# Session Plan
+
+Generate a focused, opinionated plan for the user's next practice/work session. The goal is to **reduce decision fatigue** — the user should walk away knowing exactly what to do, in what order, and what to deliberately ignore this session.
+
+## When to use
+
+- User runs `/session-plan` (optionally followed by a domain name and/or notes)
+- User says "what should my next session look like?" or similar
+- User is about to start a practice/work block and wants a focused plan
+
+Default domain is `bass` if not specified, because that's the first persistent context directory. Future domains (writing, study, language) can live under `~/Context/<domain>/` with the same layout.
+
+## Arguments
+
+- `$1` — optional domain (default: `bass`). Maps to `~/Context/<domain>/`.
+- Remaining args — free-form notes the user wants factored in ("I only have 20 minutes", "hand is sore", "want to focus on the bridge").
+
+Examples:
+- `/session-plan` → bass, no extra context
+- `/session-plan bass 30 min only` → bass, short session
+- `/session-plan bass hand sore, no drills` → skip hard drilling
+
+## Step 1 — Read the context
+
+Read these files (ignore missing ones gracefully):
+
+1. `~/Context/<domain>/profile.md` — player/writer/learner profile
+2. `~/Context/<domain>/learning-path.md` — current phase + strategy
+3. `~/Context/<domain>/progress.md` — most recent entries (just the top ~60 lines is enough)
+4. `~/Context/<domain>/songs/` or equivalent subject directory — per-subject notes
+5. `~/Context/<domain>/logs/takes.csv` — most recent 3-5 rows for the latest measurements
+
+If the domain has no `logs/takes.csv` (because it's not a measured domain), skip that step.
+
+**Pay attention to:**
+- Current phase and definition of done
+- Most recent drill target(s) and whether they've been addressed
+- Latest measurement numbers and their trend
+- Anything flagged as "not yet learned" vs "needs drilling" — these are DIFFERENT tasks
+- Any blockers or caveats noted in the progress log
+
+## Step 2 — Synthesize
+
+Before writing the plan, decide internally:
+
+1. **Is this a learning session or a drilling session?**
+   - *Learning* = adding new material. Slow tempo, no measurement, no pressure.
+   - *Drilling* = refining known material. Measured, high rep, incremental tempo bumps.
+   - *Milestone* = end-of-phase evaluation. Full run-through, recorded, analyzed.
+   - A single session can mix these, but each block should be ONE type. Never mix learning and drilling in the same 20 minutes.
+
+2. **What is the ONE thing this session must accomplish?**
+   - If the user tries to do three things, they'll do none well. Pick the single most important outcome given current state.
+
+3. **What is the user currently tempted to do that would be a mistake?**
+   - e.g., "drill a section that isn't actually the weak spot", "record a measured take before new material is cemented", "bump tempo before consistency is there", "practice the clean sections because they're fun".
+   - Name this explicitly as "What to NOT do this session" — reducing wrong actions is as valuable as suggesting right ones.
+
+4. **Factor in the user's free-form notes.**
+   - Short session → cut blocks, don't rush them
+   - Physical fatigue → skip drilling, do only learning or cool-down
+   - Specific focus request → honor it unless it directly contradicts the phase goal (if contradicted, say so and let the user decide)
+
+## Step 3 — Output format
+
+Output a concise, scannable plan. Stick to this structure:
+
+```
+## Session goal
+<one sentence — the ONE thing this session is for>
+
+## Session type
+<learning | drilling | milestone | mixed (A+B)>
+
+## Blocks
+1. **<name> (<N min>)** — <specific instruction with tempo/section/target>
+   _Why:_ <one line reason>
+2. ...
+
+## What to NOT worry about this session
+- <thing 1 with brief reason>
+- <thing 2 with brief reason>
+
+## After the session
+<what to log, measure, or commit to context — usually a one-liner>
+```
+
+### Rules for the output
+
+- **Total session time should match what the user has** (or default to ~45 min if not specified).
+- **Every block has a concrete instruction**, not vague advice. "Drill the hard part" is bad; "Loop 70–80s at 130 BPM to the drum stem, 15 minutes" is good.
+- **Reference exact file paths, section timestamps, tempos, and targets from the context.** If the latest logged take says the problem window is 70–80s at CV 0.71, use those numbers.
+- **Skip insights and explanatory padding.** The skill's job is a plan, not a lecture. Claude's explanatory style still applies to the *conversation around* the plan, but the plan itself should be tight.
+- **Call out the distinction between learning and drilling** whenever the domain has both kinds of tasks pending.
+- **If the context is ambiguous or stale, say so and ask one clarifying question before generating the plan** — better than generating a plan on wrong assumptions.
+
+## Step 4 — Offer to log the plan
+
+After displaying the plan, ask the user whether to log the intent to `~/Context/<domain>/progress.md` (e.g. "planning X, Y, Z for tomorrow's session"). Do NOT auto-write. Only log if the user says yes.
+
+## Step 5 — Offer the post-session workflow
+
+After presenting the plan, also mention (one line) that after the session the user can run the domain's analysis tool (if any) and `compare-takes.py` to see the delta. Don't explain how — just remind.
+
+## Notes for Claude
+
+- **Never invent numbers.** If no recent take data exists in `logs/takes.csv`, say "no recent measurements" and base the plan on the learning path alone.
+- **Never recommend drilling an unlearned section** — that's a category error. Learning it must come first.
+- **Prefer one strong recommendation over a menu of options.** If the user wanted options they wouldn't have asked for a plan.
+- **If this is clearly a milestone session** (e.g. "first full-song recording", "end-of-phase test"), say so explicitly and adjust the block structure to prioritize a clean recorded attempt over drilling.
+- **Respect the user's own reported state.** If they say they're tired, the plan must reflect that, even if the "optimal" plan would be harder.
