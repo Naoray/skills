@@ -1,0 +1,5 @@
+{
+  "name": "plan-my-day",
+  "description": "Daily planning workflow — syncs reminders, checks calendar, builds schedule, creates daily note",
+  "user_invocable": true
+}

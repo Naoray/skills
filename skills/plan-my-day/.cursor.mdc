@@ -1,0 +1,80 @@
+---
+description: Daily planning workflow — syncs reminders, checks calendar, collaboratively builds a schedule, adds events, and creates a daily note. Use when the user says "plan my day".
+alwaysApply: false
+---
+
+# Plan My Day
+
+Interactive daily planning workflow. Syncs all inputs, shows the landscape, collaborates on a schedule, then commits to calendar and daily note.
+
+## Prerequisites
+
+- `icalBuddy` — reads all Apple + Google calendars
+- `gws calendar` — writes to Google calendars
+- `~/context/admin/scripts/sync-reminders.sh` — syncs Apple Reminders Inbox
+- Apple Calendar.app skill scripts at `~/.claude/skills/apple-calendar/scripts/`
+
+## Workflow
+
+### Step 1: Gather inputs (do silently, show results)
+
+1. Run `~/context/admin/scripts/sync-reminders.sh` to pull latest reminders
+2. Update `~/context/admin/reminders-organized.md` with any new items categorized
+3. Run `icalBuddy -f eventsToday` to get today's calendar events
+
+**Filter calendars:** Only show events from relevant calendars. Ignore: Семья (Family), La Ginesta, Feiertage in Deutschland, Kalenderwochen, Bitmate, Deutsche Feiertage, Holidays in Germany, Birthdays, Siri Suggestions.
+
+### Step 2: Present the picture
+
+Show the user:
+- **Today's fixed commitments** — existing calendar events with times
+- **Open reminders** — from `~/context/admin/reminders-organized.md`
+- Then ask: **"What else do you need to get done today?"**
+
+### Step 3: Build the schedule together
+
+- Wait for user input on additional tasks
+- Propose time blocks around fixed commitments
+- Respect energy patterns: deep focus work before 10am, learning/research during afternoon energy dips
+- Iterate until the user agrees with the schedule
+
+### Step 4: Lock it in (only after user approves)
+
+1. **Add time blocks to calendar:**
+   - Use Apple Calendar via `~/.claude/skills/apple-calendar/scripts/cal-create.sh` (preferred — ensures native macOS notifications work)
+   - Default calendar for new events: `Personal` unless user specifies otherwise
+   - Only use `gws calendar events insert` if the user explicitly wants an event on Google Calendar
+
+2. **Create daily note** at `~/context/admin/daily-notes/YYYY/MM-Month/YYYY-MM-DD.md`
+
+### Daily Note Template
+
+```markdown
+# YYYY-MM-DD — Day Name
+
+## Schedule
+
+| Time | Block | Calendar |
+|------|-------|----------|
+| HH:MM–HH:MM | Event/task name | calendar |
+| ... | ... | ... |
+
+## Running Log
+
+_Entries added throughout the day as things happen._
+
+## End-of-Day Reflection
+
+- What went well today?
+- What didn't go as planned?
+- What will I do differently tomorrow?
+- Energy level: /10
+```
+
+Create year/month folders (`YYYY/MM-Month/`) if they don't exist. Use zero-padded month with name (e.g., `04-April`).
+
+## Reminders Files
+
+- `~/context/admin/reminders-inbox.md` — raw dump from sync script
+- `~/context/admin/reminders-organized.md` — categorized version (preserve existing categories, add new items)
+- `~/context/admin/scripts/sync-reminders.sh` — the sync script
