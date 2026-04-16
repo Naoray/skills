@@ -29,3 +29,5 @@ catalog:
       source: github:Artistfy/hq@main
     - name: dev-browser
       source: github:Artistfy/hq@main
+    - name: cleanup
+      source: github:Artistfy/hq@main
