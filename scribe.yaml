@@ -27,3 +27,5 @@ catalog:
       source: github:Artistfy/hq@main
     - name: recap-report
       source: github:Artistfy/hq@main
+    - name: dev-browser
+      source: github:Artistfy/hq@main
