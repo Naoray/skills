@@ -17,3 +17,6 @@ catalog:
     - name: session-plan
       source: github:Naoray/skills@main
       path: skills/session-plan
+    - name: record
+      source: github:Naoray/skills@main
+      path: skills/record

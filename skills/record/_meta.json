@@ -1,0 +1,5 @@
+{
+  "name": "record",
+  "description": "Append timestamped entries to today's daily note running log — runs silently throughout sessions or manually via /record",
+  "user_invocable": true
+}
