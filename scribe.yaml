@@ -11,3 +11,6 @@ catalog:
     - name: plan-my-day
       source: github:Naoray/skills@main
       path: skills/plan-my-day
+    - name: evaluate-day
+      source: github:Naoray/skills@main
+      path: skills/evaluate-day

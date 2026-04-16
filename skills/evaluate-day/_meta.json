@@ -1,0 +1,5 @@
+{
+  "name": "evaluate-day",
+  "description": "Synthesize today's (or a given day's) Running Log into End-of-Day Reflection answers, then ask for energy level and additions",
+  "user_invocable": true
+}

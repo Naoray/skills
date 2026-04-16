@@ -1,0 +1,107 @@
+---
+name: evaluate-day
+description: Synthesize the Running Log of a daily note into End-of-Day Reflection answers. Invoked manually via /evaluate-day. Accepts optional argument (today, yesterday, or YYYY-MM-DD; defaults to today).
+source:
+  url: https://www.writerbuilder.com/howiai#context-directory
+  author: Hilary Gridley
+  note: Adapted and significantly modified — original is the End-of-Day Reflection template in Part 3 of her Context Directory guide
+---
+
+# Evaluate Day — Reflection Synthesis
+
+Read a daily note's Running Log and fill in the End-of-Day Reflection section based on actual events. Ask the user for energy level and anything to add.
+
+## Expected layout
+
+This skill reads from `~/context/admin/daily-notes/YYYY/MM-Month/YYYY-MM-DD.md` — the "context directory" convention from Hilary Gridley's [Context Directory and Daily Notes guide](https://www.writerbuilder.com/howiai#context-directory). Pair with `plan-my-day` (creates the notes) and `record` (populates the Running Log).
+
+## Invocation
+
+- `/evaluate-day` — evaluate today
+- `/evaluate-day yesterday` — evaluate yesterday
+- `/evaluate-day 2026-04-09` — evaluate specific date
+
+## Steps
+
+### 1. Resolve target date
+- Default: today (`date '+%Y-%m-%d'`)
+- `yesterday`: `date -v-1d '+%Y-%m-%d'` (macOS)
+- Explicit date: use as-is, validate format `YYYY-MM-DD`
+
+### 2. Locate the daily note
+Path: `~/context/admin/daily-notes/YYYY/MM-Month/YYYY-MM-DD.md`
+
+Use the `MM-Month` folder name (e.g. `04-April`). Derive month name from the date.
+
+If the file doesn't exist, tell the user and stop — there's nothing to evaluate.
+
+### 3. Read the full note
+Read the file. Extract the `## Running Log` section and check if `## End-of-Day Reflection` is already answered (not just placeholder questions).
+
+### 4. Handle already-answered case
+If reflection answers already exist (non-placeholder content after each question), ask the user:
+- Overwrite?
+- Append additional thoughts?
+- Abort?
+
+Don't silently overwrite.
+
+### 5. Synthesize answers from the log
+Read every entry in the Running Log. For each reflection question, draft an answer grounded **only** in what the log actually contains. Do not invent events.
+
+**What went well today?**
+- Pull wins from the log: tasks completed, bugs fixed, PRs shipped, features delivered, deep-work blocks honored, decisions made, incidents recovered
+- Cite specifics (PR numbers, project names, outcomes) where the log has them
+
+**What didn't go as planned?**
+- Pull friction from the log: meetings overran, blockers hit, plans abandoned, incidents, context switches, blocks that didn't happen
+- Compare the Schedule section (if present) against Running Log — what was scheduled but not logged?
+
+**What will I do differently tomorrow?**
+- Translate the "didn't go as planned" items into concrete adjustments
+- Keep it actionable, not vague ("defend calendar blocks" not "be better at time management")
+
+### 6. Handle thin logs
+If the log has 0-2 entries, don't fabricate a rich reflection. Write something honest like:
+- "Thin log — not much captured. [brief note on the one thing logged]"
+- "Day drifted — no structured log entries."
+
+And suggest running `/plan-my-day` tomorrow for structure.
+
+### 7. Ask the user two things
+After drafting synthesized answers, ask the user (in one turn):
+1. **Energy level** (/10)
+2. **Anything to add or correct?** — wins the log missed, context the log didn't capture, mood, health, etc.
+
+Wait for response. Don't write the file yet.
+
+### 8. Merge and write
+Integrate the user's energy level and additions into the draft. Write to the file by replacing the placeholder reflection section:
+
+```markdown
+## End-of-Day Reflection
+
+- What went well today? [synthesized + user additions]
+- What didn't go as planned? [synthesized + user additions]
+- What will I do differently tomorrow? [synthesized + user additions]
+- Energy level: N/10 [optional short note from user]
+```
+
+Use the Edit tool on the existing placeholder block.
+
+### 9. Confirm
+Briefly confirm what was written. Don't re-summarize all the content — the user just answered.
+
+## Rules
+
+- Never invent events not present in the log
+- Preserve the user's voice — quote or paraphrase their additions, don't reword
+- Thin logs → thin but honest reflections, not padded fabrications
+- Always ask before overwriting existing answers
+- Use the actual date from `date`, not a guess
+- If invoked mid-day (before end-of-day), proceed anyway — it's the user's call
+
+## Related skills
+
+- `/record` — the inverse: writes entries to the Running Log throughout the day
+- `/plan-my-day` — creates the day's Schedule that this skill evaluates against
