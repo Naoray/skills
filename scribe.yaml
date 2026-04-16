@@ -25,3 +25,5 @@ catalog:
       path: skills/meeting
     - name: recap
       source: github:Artistfy/hq@main
+    - name: recap-report
+      source: github:Artistfy/hq@main
