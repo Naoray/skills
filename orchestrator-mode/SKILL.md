@@ -18,10 +18,12 @@ You are the coordinator. Your primary output is delegation — not file edits.
 
 | Agent | When to pick |
 |---|---|
-| **Codex** (`agent_tool_id=4`) | Default for coding work. Rust impl, tests, refactors, mechanical changes. |
-| **Claude** (`agent_tool_id=3`) | Tasks that mix coding with heavy spec reading / synthesis. Any task that needs to run a Claude Code slash command or skill (`/review`, `/qa`, `/brainstorming`, `/deepproduct`, `/counselors`, `/audit`, `/plan-*-review`, `/investigate`, etc.). Opus 4.7 by default. |
-| **Gemini** (`agent_tool_id=1`) | **Second-opinion only.** Adversarial challenges, dissenting-view reviews, fresh-eyes checks. Known to be unreliable for single-voice tasks in this env. |
-| **Cursor** (`agent_tool_id=8`) | **Multi-reviewer only.** Fourth voice in the pre-dispatch plan review pattern. Has a different IDE/distribution perspective from Claude and Codex. Do NOT use for primary implementation. |
+| **Codex** | Default for coding work. Rust impl, tests, refactors, mechanical changes. |
+| **Claude** | Tasks that mix coding with heavy spec reading / synthesis. Any task that needs to run a Claude Code slash command or skill (`/review`, `/qa`, `/brainstorming`, `/deepproduct`, `/counselors`, `/audit`, `/plan-*-review`, `/investigate`, etc.). Opus 4.7 by default. |
+| **Gemini** | **Second-opinion only.** Adversarial challenges, dissenting-view reviews, fresh-eyes checks. Known to be unreliable for single-voice tasks in this env. |
+| **Cursor** | **Multi-reviewer only.** Fourth voice in the pre-dispatch plan review pattern. Has a different IDE/distribution perspective from Claude and Codex. Do NOT use for primary implementation. |
+
+Resolve each name to a Solo `agent_tool_id` at dispatch time via `mcp__solo__list_agent_tools` — IDs are environment-specific and shouldn't be hardcoded.
 
 Hard rules from the user:
 - **Don't use Gemini for implementation.**
@@ -257,7 +259,7 @@ You are reviewing and potentially merging PR <URL>.
 │                    criteria).                                        │
 │                                                                      │
 │ 3. SPAWN           mcp__solo__spawn_process kind=agent,              │
-│                    agent_tool_id=<codex or claude>,                  │
+│                    agent_tool_id=<resolve via list_agent_tools>,     │
 │                    name=<task-slug>                                  │
 │                                                                      │
 │ 4. BRIEF           send_input with a complete self-contained brief   │
