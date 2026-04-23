@@ -27,6 +27,93 @@ Hard rules from the user:
 - **Use Codex as default coding.**
 - **Claude is good for coding too, especially research-heavy or spec-heavy coding.**
 
+## Post-dispatch review + merge workflow
+
+After a coding agent opens a PR, the orchestrator does **not** merge directly. Instead, dispatch a fresh Claude solo agent per PR with a combined brief covering code-quality review AND plan conformance. The reviewer then gates the merge itself.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ 1. DISPATCH REVIEWER    One Claude solo agent per open PR.           │
+│                         The agent does BOTH passes:                  │
+│                                                                      │
+│                         a) Run `/review <PR>` for code-quality       │
+│                            (bugs, security, convention, correctness) │
+│                                                                      │
+│                         b) Validate that what shipped matches what   │
+│                            was planned: load the originating solo    │
+│                            todo / brief / spec section, diff the     │
+│                            PR scope against it, flag missing or      │
+│                            out-of-scope work.                        │
+│                                                                      │
+│                         Verdict:                                     │
+│                         - CLEAN  → agent merges (rebase-merge for    │
+│                                    feature-branch targets, squash    │
+│                                    for main-targeting), deletes      │
+│                                    remote branch, closes the worktree│
+│                         - NITS   → merges and files follow-up todos  │
+│                         - BLOCKERS → does NOT merge; files solo      │
+│                                      todos for each blocker + posts  │
+│                                      a PR review comment summarising │
+│                                      what must change                │
+│                                                                      │
+│ 2. EVALUATE FEEDBACK    Orchestrator reads the reviewer's summary    │
+│                         (from its scratchpad slug or final stdout).  │
+│                         For BLOCKERS: dispatch a fix agent on a new  │
+│                         anvil worktree to address them, then cycle   │
+│                         back through step 1.                         │
+│                                                                      │
+│ 3. POST-MERGE           When all PRs for the current wave are merged:│
+│                         - git checkout main                          │
+│                         - git pull --ff-only                         │
+│                         - git fetch --prune                          │
+│                         - list remaining solo todos                  │
+│                         - decide the next wave                       │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+The combined reviewer has access to the full `/review` skill plus the original planning artefacts. This avoids (a) the orchestrator's "did I eyeball the diff carefully enough?" risk and (b) the gap where code looks clean but doesn't actually deliver the feature as scoped.
+
+### Reviewer brief template
+
+```text
+You are reviewing and potentially merging PR <URL>.
+
+## Context
+- Origin: solo todo #<ID> — <title>. Body at mcp__solo__todo_get todo_id=<ID>.
+- Spec section(s): <file:line refs>
+- Counselors / prior review artefacts: <scratchpad slug / file path>
+
+## Your job
+1. Run `/review <PR number>` for code quality, security, convention.
+2. Plan-conformance pass:
+   a. Re-read the solo todo + spec section.
+   b. Diff what the PR changed against what the todo scoped.
+   c. Flag anything missing or out of scope.
+3. Sanity tests: fetch the branch locally, run the project's standard
+   test command (`cargo test -p gaze` for this repo), confirm green.
+4. Decide: CLEAN / NITS / BLOCKERS.
+
+## On CLEAN or NITS
+- Merge the PR (rebase-merge for feature-branch targets, squash-merge
+  for main-targeting PRs).
+- For NITS: open a follow-up solo todo per nit with scope + rationale.
+- Delete the remote branch.
+- Print the merge SHA + "MERGED".
+
+## On BLOCKERS
+- Do NOT merge.
+- Post a single PR review comment summarising every blocker with
+  specific file:line references and the required fix.
+- File a solo todo per blocker.
+- Print "BLOCKED — <count> todos filed".
+
+## Rules
+- Use scribe / gh / solo tools as needed.
+- Write your structured verdict + diff summary to a solo scratchpad
+  (slug: pr-<NUMBER>-review) before mutating PR state.
+- Do not push or comment anything else.
+```
+
 ## Dispatch workflow (coding task)
 
 ```
