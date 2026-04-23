@@ -164,9 +164,27 @@ Outside these, push work to a solo delegate.
 
 ## Monitoring
 
-- **ScheduleWakeup** (in /loop dynamic mode) is the main polling tool for external-actor orchestrators. Solo timers don't fire for external actors.
-- Wakeup cadence: 270s if watching closely + cache-warm; 1200-1800s for idle polls. Avoid 300-600s — worst of both worlds (cache expired, no real progress either).
-- Between wakeups: reading `get_process_output`, `git log`, and PR state is free.
+**Primary mechanism: solo idle timers.** After dispatching one or more worker agents, schedule a `mcp__solo__timer_fire_when_idle_any` with the worker process IDs and a `max_wait_ms` ceiling. The timer fires when any worker goes idle — which is the cheapest possible wake signal (no polling, no cache burn). The timer's `body` is injected into the orchestrator's PTY as a fresh user turn, so frame it as a self-contained instruction: "Worker N went idle; check its commits, diff, PR state; spawn follow-up or close."
+
+Example dispatch:
+
+```
+mcp__solo__timer_fire_when_idle_any
+  processes: [358, 359, 360]
+  max_wait_ms: 1800000      # 30 min ceiling
+  body: "One of the dispatched workers (358 policy, 359 class-names, 360 publish) just went idle or 30 min elapsed. For each worker, check get_process_output, git log on its worktree branch, and PR state. Close finished agents. Schedule another timer if any are still running."
+```
+
+When any worker transitions to idle, the orchestrator wakes up, inspects state, and either closes the finished worker or re-arms a timer on the still-running ones.
+
+**Fallback mechanism: ScheduleWakeup** (in /loop dynamic mode). Needed only when the orchestrator session cannot receive solo timer wake-ups — specifically when it's an external actor registered via `register_agent` (no PTY for Solo to inject into) rather than a Solo-managed child process. Error message gives it away: `timer_* tools require a Solo agent process bound to this MCP session. External actors registered with register_agent cannot receive timer wake-ups; use your own sleep or wait logic instead.`
+
+If you hit that error, fall back to ScheduleWakeup cadence:
+- 270s when watching closely + keeping cache warm
+- 1200-1800s for idle polls
+- Avoid 300-600s — worst of both worlds (cache expired, little progress either)
+
+Between wakeups: reading `get_process_output`, `git log`, and PR state is free.
 
 ## Session lifecycle
 
