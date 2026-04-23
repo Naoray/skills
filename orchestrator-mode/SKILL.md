@@ -162,7 +162,9 @@ intentionally-deferred work.
 
 ## Post-dispatch review + merge workflow
 
-After a coding agent opens a PR, the orchestrator does **not** merge directly. Instead, dispatch a fresh Claude solo agent per PR with a combined brief covering code-quality review AND plan conformance. The reviewer then gates the merge itself.
+**Scope: code PRs only.** This workflow applies when the PR changes source code, tests, configuration that affects behaviour, or any artefact whose correctness is load-bearing for users. For pure docs / skill / prose updates with no behavioural impact, **merge directly without a reviewer** — the orchestrator squash-merges after a quick sanity read. Don't burn a reviewer agent on markdown-only changes.
+
+For code PRs, the orchestrator does **not** merge directly. Instead, dispatch a fresh Claude solo agent per PR with a combined brief covering code-quality review AND plan conformance. The reviewer then gates the merge itself.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -361,17 +363,67 @@ Exceptions:
 - Pure read-only tasks (e.g. reviews, counselors) can share the main working tree.
 - A single delegated task with no parallelism — still preferred in a worktree, not required.
 
-## Feedback capture — todos + scratchpads, not repo files
+## Scratchpads, todos, and durable memory — clear role separation
 
 User directive: *"based on feedback from agent session you need to create todos or can even tell agents to write scratchpads if necessary. so we don't clutter the repo"*
 
-| Kind of feedback | Where it goes |
-|---|---|
-| Follow-up work that ships (new behaviour, fix) | **solo todo** via `todo_create` |
-| Scoping / research notes for future orchestration | **solo scratchpad** via `scratchpad_write` |
-| Review reports, counselors outputs | **solo scratchpad** — never the repo |
-| Design specs that ship with the codebase | repo `docs/` (e.g. `docs/roadmap/`) |
-| Throwaway debugging output | stdout only |
+Four places state can live. Each has one job; don't double-write.
+
+| Surface | Purpose | Lifetime | Read by |
+|---|---|---|---|
+| **Solo scratchpad** | Working artefact that the NEXT step in the current workflow consumes (brainstorm → plan → review → impl hand-offs). | Archive when the workflow closes (PR merged / todo done). | The next-step agent; occasionally the orchestrator when synthesizing. |
+| **Solo todo** | Actionable work with accept criteria. | Closed when done (with a verification comment). | Orchestrator + fix agents. |
+| **MemPalace drawer** | Durable cross-session knowledge: design decisions, verbatim user directives, postmortems, "what we learned". | Permanent. Updated in place when the fact evolves. | Any future session via `mempalace_search`. |
+| **Repo `docs/`** | Shipping artefact that lives with the code. | Versioned with the codebase. | End users, future contributors. |
+
+### Scratchpad naming convention
+
+```text
+<kind>/<identifier>
+  kind       = review | plan | audit | brainstorm | handoff | research
+  identifier = stable: <repo>-pr-<N> | solo-<N> | <feature-slug>
+
+Examples:
+  review/naoray-gaze-pr-10
+  review/naoray-gaze-pr-10-rereview     (second-pass differentiator)
+  audit/gaze-laravel
+  brainstorm/solo-6
+  plan/solo-6
+  handoff/gaze-v03-cli-to-main
+  research/pii-pattern-engine
+```
+
+No date suffixes in slugs — the scratchpad's `updated_at` already records time, and dates in slugs age out as workflows span multiple days.
+
+### When to write a scratchpad (vs. final stdout vs. MemPalace drawer)
+
+Write a scratchpad only if:
+- Another agent (or a later orchestrator step) will read it as input.
+- The content is >200 words of structured data.
+- The workflow is multi-step and the artefact needs to survive agent PTY close.
+
+Otherwise: final stdout + (optionally) a MemPalace drawer if the insight is durable.
+
+Write a MemPalace drawer instead of (or in addition to) a scratchpad when:
+- The user states a durable rule or preference (verbatim).
+- A postmortem resolves what went wrong + the fix pattern.
+- A design decision is taken with trade-offs worth preserving across sessions.
+
+Write a solo todo when:
+- There's a concrete follow-up action with an acceptance criterion.
+- Scope > 5 minutes of agent work.
+
+Write to repo `docs/` when:
+- The content ships with the code (specs, ADRs, user-facing guides).
+
+Throwaway debugging output stays in stdout only.
+
+### Lifecycle discipline
+
+- When a PR merges: `scratchpad_archive` the review scratchpad(s) for it.
+- When a solo todo closes: archive any scratchpads whose slug references it (e.g. `brainstorm/solo-6` + `plan/solo-6` both go when #6 closes).
+- Every session start: `scratchpad_list` and prune anything obviously stale (workflow closed > N weeks ago).
+- If two scratchpads cover the same identifier (e.g. first-pass + re-review of the same PR), keep both but distinguish via suffix (`review/naoray-gaze-pr-10-first-pass`, `review/naoray-gaze-pr-10-rereview`).
 
 ## When the orchestrator may edit files directly
 
