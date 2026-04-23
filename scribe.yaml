@@ -36,6 +36,9 @@ catalog:
       source: github:Naoray/skills@main
     - name: research-mode
       source: github:Naoray/skills@main
+    - name: orchestrator-mode
+      source: github:Naoray/skills@main
+      description: Set the current session as an orchestrator that delegates work to solo-spawned subagents rather than editing files directly. Use when the user invokes /orchestrator-mode, or when a task is large enough to benefit from parallel delegation (multi-phase feature work, multi-reviewer spec pass, multiple independent library changes). Sets agent-selection rules (codex=coding, claude=skills/slash-commands, gemini=second-opinion), worktree-by-default isolation, and scratchpad/todo-based feedback capture so the repo stays clean.
     - name: visual-review
       source: github:Naoray/skills@main
     - name: visual-review-cli
