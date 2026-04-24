@@ -13,6 +13,7 @@ You are the coordinator. Your primary output is delegation — not file edits.
 2. **Spawn one solo process per task.** Brief each subagent with a focused scope, a commit discipline, and an explicit deliverable (commit/PR/scratchpad summary).
 3. **Each coding delegate operates in its own anvil worktree.** Never share a working tree between parallel coding agents. Use Claude's built-in `isolation: "worktree"` is forbidden by the user's global CLAUDE.md — always use `anvil`.
 4. **Capture subagent output in solo todos + scratchpads, not repo files.** The repo is for shipping artefacts; ephemeral review reports and working notes live in Solo.
+5. **Default to dispatch, not to ask.** User directive (2026-04-23, verbatim): *"why don't you let the agents work for you?!"*. When the next-wave work has enough context to run, fire it — do not idle while a prior wave completes. Parallel tracks that share no state (multi-review, independent writing-plans, docs, housekeeping) should launch concurrently with in-flight work. Only ask the user when scope is genuinely ambiguous or a decision changes direction (product scope, SemVer strategy, locale priority). Mechanical next-steps in the spec-formalization flow (brainstorm → plan → review → impl) are dispatches, not questions.
 
 ## Agent selection (user-specified defaults)
 
@@ -168,10 +169,11 @@ For code PRs, the orchestrator does **not** merge directly. Instead, dispatch a 
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ 1. DISPATCH REVIEWER    One Claude solo agent per open PR.           │
-│                         The agent does BOTH passes:                  │
+│ 1. DISPATCH REVIEWER    Pick reviewer per routing table below.       │
+│                         Agent does BOTH passes:                      │
 │                                                                      │
-│                         a) Run `/review <PR>` for code-quality       │
+│                         a) Run `/review <PR>` (or equivalent codex   │
+│                            review command) for code-quality          │
 │                            (bugs, security, convention, correctness) │
 │                                                                      │
 │                         b) Validate that what shipped matches what   │
@@ -205,6 +207,20 @@ For code PRs, the orchestrator does **not** merge directly. Instead, dispatch a 
 │                         - decide the next wave                       │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+### Reviewer routing — pick the right voice (user directive 2026-04-24)
+
+Don't default every PR review to Claude. Utilize Codex. Orchestrator judges per task:
+
+| Task | Default reviewer | Rationale |
+|---|---|---|
+| **Code PR merge-gate** (small-to-medium scope bug/correctness/convention) | **Codex** | Impl-pragmatics voice catches Cargo cycles, type-system gotchas, regex edge cases, fail-closed regressions. |
+| **Spec/prose-heavy code PR** (requires reading multiple spec docs, Claude Code skill invocation, architectural synthesis) | **Claude** | Spec-reading depth + `/review`/`/qa`/`/audit` skill stack. |
+| **Docs-only PR** (prose-only `*.md`) | **Single Claude, no reviewer burned** | Don't spin up code-review voice for prose. Orchestrator or a light Claude gate squash-merges after sanity read. |
+| **High-stakes code PR** (release-blocking, security-adjacent, multi-module refactor) | **Dual: Claude + Codex in parallel** | Both voices catch orthogonal classes. Orchestrator synthesizes before merge. |
+| **Plan formalization multi-review** (after brainstorm → writing-plans) | **Dual: Claude + Codex in parallel** (add Gemini as optional third adversarial voice; skip Cursor — 0/2 reliability in this env) | Validated pattern — Codex catches impl-pragmatics blockers Claude misses; Claude catches contract drift Codex misses. Neither substitutable. |
+
+User directive verbatim: *"you don't need dual reviews on everything. But you can use codex by default or decide on your own. I just want us to utilize my codex sub as well"*
 
 The combined reviewer has access to the full `/review` skill plus the original planning artefacts. This avoids (a) the orchestrator's "did I eyeball the diff carefully enough?" risk and (b) the gap where code looks clean but doesn't actually deliver the feature as scoped.
 
@@ -282,9 +298,22 @@ You are reviewing and potentially merging PR <URL>.
 
 ## Brief template for a coding delegate
 
-Copy, fill, send. Do not skip the worktree step — the user has been explicit about this.
+Copy, fill, send. Do not skip the worktree step — the user has been explicit about this. Every brief MUST begin with the reporting contract (Pattern C via `solo-orchestration` skill).
 
 ```text
+## Reporting contract (CRITICAL — do this first)
+
+Invoke the `solo-orchestration` skill immediately (via the Skill tool) and apply Pattern C.
+
+Orchestrator pid: <ORCHESTRATOR_PID_FROM_WHOAMI>.
+
+Sentinel vocabulary (final stdout line + push via `send_input(orchestrator_pid, ...)` at terminal event):
+IMPL DONE / REVIEW DONE / PLAN DONE / PLAN PATCHED / BRAINSTORM DONE / CLEANUP DONE / MERGED / RELEASE READY / BLOCKED.
+
+Use `scratchpad_append` for mid-task milestones — do NOT send_input for progress, only on terminal event.
+
+---
+
 You are the <TOPIC> implementation worker for <PROJECT>. Work in an anvil
 worktree branched off `<PARENT_BRANCH>`, finish with a PR.
 
@@ -333,6 +362,17 @@ Start now with Step 0.
 ## Brief template for a slash-command delegate
 
 ```text
+## Reporting contract (CRITICAL — do this first)
+
+Invoke the `solo-orchestration` skill immediately and apply Pattern C.
+
+Orchestrator pid: <ORCHESTRATOR_PID_FROM_WHOAMI>.
+
+On terminal event, print the sentinel as your final stdout line AND call:
+    mcp__solo__send_input process_id=<ORCH_PID> input="<SENTINEL>: <payload>"
+
+---
+
 You are running <SLASH_COMMAND> on <TARGET>. Do not create worktrees or
 branches — this is a read-only dispatch.
 
@@ -436,18 +476,28 @@ Outside these, push work to a solo delegate.
 
 ## Monitoring
 
-**Primary mechanism: solo idle timers.** After dispatching one or more worker agents, schedule a `mcp__solo__timer_fire_when_idle_any` with the worker process IDs and a `max_wait_ms` ceiling. The timer fires when any worker goes idle — which is the cheapest possible wake signal (no polling, no cache burn). The timer's `body` is injected into the orchestrator's PTY as a fresh user turn, so frame it as a self-contained instruction: "Worker N went idle; check its commits, diff, PR state; spawn follow-up or close."
+> **See also: `solo-orchestration` skill** — mechanism-level guide for push-vs-poll reporting. Defines Pattern A (idle-timer safety net), Pattern B (spawn `send_input` callback = true push), and Pattern C (combo, recommended default). Every agent you spawn should invoke this skill at session start; the orchestrator's job is to seed the brief with the orchestrator pid and safety-net timer.
 
-Example dispatch:
+**Default: Pattern C (combo).** Worker invokes `solo-orchestration` skill → writes progress to `spawn-{PID}-status` scratchpad → calls `send_input(orchestrator_pid, "<SENTINEL>: ...")` on terminal events (DONE/BLOCKED/FAILED). Orchestrator wakes on the push, not on idle-transition false positives. This is the primary mechanism — every worker brief MUST include the reporting-contract preamble:
+
+```
+Invoke the `solo-orchestration` skill immediately and apply Pattern C.
+Orchestrator pid: <QUERIED_VIA_whoami>.
+Sentinel vocab per orchestrator-mode (PLAN PATCHED / REVIEW DONE / IMPL DONE / MERGED / BLOCKED / etc.).
+```
+
+**Always pair Pattern C with Pattern A** (idle-timer) as safety net in case the worker forgets to call back:
 
 ```
 mcp__solo__timer_fire_when_idle_any
   processes: [358, 359, 360]
-  max_wait_ms: 1800000      # 30 min ceiling
+  max_wait_ms: 1800000      # 30 min ceiling — 2× expected P50 for the task class
   body: "One of the dispatched workers (358 policy, 359 class-names, 360 publish) just went idle or 30 min elapsed. For each worker, check get_process_output, git log on its worktree branch, and PR state. Close finished agents. Schedule another timer if any are still running."
 ```
 
-When any worker transitions to idle, the orchestrator wakes up, inspects state, and either closes the finished worker or re-arms a timer on the still-running ones.
+The timer is the fallback path. In steady state, Pattern C push arrives first; when it does, orchestrator harvests + closes the worker, then cancels the now-redundant timer (or lets it expire harmlessly).
+
+**Anti-pattern: idle-timer as primary.** Don't arm `timer_fire_when_idle_any` and expect it to be the cheapest wake signal. Idle-transition has false positives (worker briefing completed before work started, worker waiting for user input, etc.). This session (2026-04-24) had timer #1 and #8 fire on already-idle processes — pure waste. Pattern C eliminates those false positives because the worker only pushes on a real terminal event.
 
 **Fallback mechanism: ScheduleWakeup** (in /loop dynamic mode). Needed only when the orchestrator session cannot receive solo timer wake-ups — specifically when it's an external actor registered via `register_agent` (no PTY for Solo to inject into) rather than a Solo-managed child process. Error message gives it away: `timer_* tools require a Solo agent process bound to this MCP session. External actors registered with register_agent cannot receive timer wake-ups; use your own sleep or wait logic instead.`
 
@@ -457,6 +507,94 @@ If you hit that error, fall back to ScheduleWakeup cadence:
 - Avoid 300-600s — worst of both worlds (cache expired, little progress either)
 
 Between wakeups: reading `get_process_output`, `git log`, and PR state is free.
+
+## Worker done-signal pattern
+
+User directive (2026-04-23): *"instruct your agents to tell you once they are finished with their task or set the timers more optimistic"*. Do both.
+
+Without an explicit sentinel, the orchestrator over-sleeps past worker completion. Failure mode from that session: set a 25-min wake when two workers actually finished in 5 and 9 minutes — binary stalled, user had to prod. Avoidable.
+
+### The rule
+
+Every worker brief MUST include a **Completion signaling** section telling the worker exactly how to announce it's done. Two channels, both cheap:
+
+1. **Sentinel line on final stdout.** A stable, greppable token with optional payload.
+2. **`done/<task-slug>` scratchpad.** Durable signal — survives orchestrator session changes.
+
+### Sentinel vocabulary
+
+Use predictable tokens so the orchestrator can grep across workers:
+
+| Worker kind | Sentinel line | Payload |
+|---|---|---|
+| brainstorm | `BRAINSTORM DONE` | scratchpad slug |
+| writing-plans | `PLAN DONE` | scratchpad slug |
+| plan reviewer | `REVIEW DONE: <CLEAN\|NITS\|BLOCKERS>` | scratchpad slug |
+| PR reviewer/merger | `MERGED <sha>` or `BLOCKED — <count> todos filed` | — |
+| release engineer | `RELEASE READY: <release-url>` | binary SHAs |
+| impl agent | `IMPL DONE: <PR url or merge sha>` | — |
+| cleanup / hygiene | `CLEANUP DONE` | scratchpad slug |
+| any worker | `BLOCKED: <reason>` | todo ids it filed |
+
+Terse, one line, on the **final** stdout line. Keep the token to the left of the `:` stable across briefings.
+
+### How the orchestrator polls
+
+Three ways to check, in increasing order of durability:
+
+- `mcp__solo__get_process_output process_id=<N> lines=10` — grep the last 10 lines for the sentinel. Cheapest. Fails if the process gets closed before you check.
+- `mcp__solo__scratchpad_list` + filter for `done/` prefix — survives process closure and session handoff.
+- `mcp__solo__list_processes` — status field flips to idle when the worker stops; pair with output tail to confirm it ended on the sentinel and not a crash.
+
+On every wake, scan all three. Close workers as soon as the sentinel is confirmed — don't leave idle workers hanging (recurring miss: user had to call this out twice in one session).
+
+### Wake cadence calibration
+
+Estimate worker runtime by task class and set wake ≈ **P50**, not P95. Rely on the sentinel-check to harvest early, rather than over-sleeping for certainty.
+
+| Task class | Typical runtime | Wake target |
+|---|---|---|
+| Slash-command dispatch (review, counselors, finalize) | 2–8 min | 270s |
+| Brainstorm (spec synthesis) | 5–12 min | 270s then 600s |
+| Writing-plans | 5–15 min | 600s |
+| Plan reviewer (single agent) | 5–20 min | 600s |
+| PR reviewer + merge | 10–30 min | 900s |
+| Release engineering (cross-build + tag) | 30–120 min | 900s then 1800s |
+| Feature impl (multi-phase commit) | 30 min – several hours | 1500s |
+
+Re-calibrate after each wave: if your last 3 wakes caught the worker still mid-flight, double. If they all caught "done 10 min ago," halve.
+
+### Brief template snippet
+
+Paste this into every worker brief, customised per task:
+
+```text
+## Completion signaling (CRITICAL)
+Orchestrator pid: {ORCH_PID}.  # fill at dispatch time via mcp__solo__whoami
+
+When fully done, do ALL THREE:
+
+1. Print on your **final stdout line**:
+       <SENTINEL>: <payload>
+   (e.g. `PLAN DONE: plan/solo-6`, `MERGED abc1234`, `RELEASE READY: https://...`)
+
+2. Write a completion scratchpad via `mcp__solo__scratchpad_write`:
+   - name: `done/<task-slug>`
+   - body: the payload + anything notable (test results, follow-ups, blockers)
+
+3. **Call back the orchestrator** via `mcp__solo__send_input`:
+       process_id: {ORCH_PID}
+       input: "<SENTINEL>: <payload>. Scratchpad: done/<task-slug>"
+   This is Pattern B push — wakes the orchestrator immediately so it
+   doesn't over-sleep. Skip only if orch_pid is unknown (then rely on
+   idle-timer wake + scratchpad).
+
+If you hit a blocker you can't resolve cleanly, print `BLOCKED: <reason>`,
+file a solo todo per blocker, send_input the orchestrator the same line,
+and stop. Do NOT proceed past blockers silently.
+```
+
+If you find yourself dispatching without this snippet, you're building a stale timer trap. Paste it. For the full push-pattern reference (Pattern A/B/C, spawn prompt template, parallel fan-in), see the `solo-orchestration` skill.
 
 ## Session lifecycle
 
