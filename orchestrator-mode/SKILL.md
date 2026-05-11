@@ -16,7 +16,7 @@ You are the coordinator. Your primary output is delegation — not file edits.
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** (skip only for mechanical / single-file / docs-only / blocker-fix work).
 6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN. Docs-only PRs merge without a reviewer.
 7. **After every merge: cleanup the worktree.** Mechanical, do it yourself, don't dispatch.
-8. **Reporting contract: every brief gets the Pattern C preamble** (see [Reporting contract](#reporting-contract)). Workers push terminal events; you don't poll.
+8. **Reporting contract: every brief gets the Pattern C preamble** (see [Reporting contract](#reporting-contract)). Pattern C is mandatory. Workers push terminal events; you don't poll. Pattern A timers and ScheduleWakeup fallbacks are forbidden.
 
 ## Decision tree
 
@@ -264,8 +264,7 @@ intentionally-deferred work.
 3. SPAWN     mcp__solo__spawn_process kind=agent, agent_tool_id=<from list_agent_tools>,
              name=<task-slug>
 4. BRIEF     send_input with full self-contained brief (template below).
-5. MONITOR   Pattern C push (default). Pattern A timer as safety net.
-             ScheduleWakeup fallback for external-actor sessions.
+5. MONITOR   Pattern C push only. No polling timers. No ScheduleWakeup.
 6. REVIEW    Verify commits, run tests, review diff + PR description.
 7. CLOSE     close_process. If worktree orphaned, dispatch anvil-agent for cleanup.
 ```
@@ -285,6 +284,9 @@ Outside these, push to a delegate.
 
 ```text
 ## Reporting contract (CRITICAL — do this first)
+
+Pattern C is mandatory. Pattern A timers, Pattern B, and ScheduleWakeup
+fallbacks are forbidden.
 
 Invoke the `solo-orchestration` skill immediately (via the Skill tool) and
 apply Pattern C.
@@ -315,6 +317,8 @@ Use scratchpad_append for mid-task milestones — do NOT send_input for
 progress, only on terminal events. If you hit a blocker you can't resolve,
 print BLOCKED, file a solo todo per blocker, send_input the same line, stop.
 ```
+
+**Sub-agent cascade:** coordinator-spawned sub-agents must use the same Pattern C contract, reporting terminal events to the coordinator via `send_input`.
 
 ### Brief template — coding delegate
 
@@ -439,59 +443,18 @@ No date suffixes — `updated_at` already records time; dates rot when workflows
 - Session start → `scratchpad_list`, prune anything from closed workflows.
 - Re-review of same identifier → keep both with suffix (`-first-pass`, `-rereview`).
 
-## Monitoring — push first, poll as fallback
+## Monitoring — Pattern C only
 
-> See **`solo-orchestration` skill** for the mechanism-level guide. Patterns A (idle timer), B (send_input push), C (combo, default).
+Worker invokes `solo-orchestration`, writes durable notes to `spawn-{PID}-status` or a `done/<task-slug>` scratchpad, and calls `send_input(orchestrator_pid, "<SENTINEL>: ...")` only on terminal events: done, blocked, merged, or review verdict.
 
-**Default = Pattern C.** Worker invokes `solo-orchestration` skill → writes progress to `spawn-{PID}-status` → calls `send_input(orchestrator_pid, "<SENTINEL>: ...")` on terminal events. Orchestrator wakes on the push, not on idle-transition false positives.
+No timers. No idle polling. No ScheduleWakeup. Idle transitions lie when a worker finishes reading a brief or waits for input; Pattern C wakes the orchestrator only when the worker declares an event.
 
-**Always pair Pattern C with Pattern A** (idle timer) as safety net:
+When a sentinel arrives:
+1. Read the `done/<task-slug>` scratchpad or terminal tail.
+2. Verify expected artifact exists: PR, commit, review verdict, todo, or scratchpad.
+3. Close the worker immediately.
 
-```
-mcp__solo__timer_fire_when_idle_any
-  processes: [358, 359, 360]
-  max_wait_ms: 1800000      # 30 min ceiling, 2× P50
-  body: "One of (358 policy, 359 class-names, 360 publish) went idle or 30 min
-         elapsed. Per worker: get_process_output, git log on its branch, PR state.
-         Close finished. Schedule another timer if any still running."
-```
-
-Cancel the redundant timer once Pattern C push arrives (or let it expire).
-
-**Anti-pattern: idle-timer as primary.** Idle-transition has false positives (worker briefing finished before work started; worker waiting for input). Pattern C eliminates them — worker only pushes on a real terminal event.
-
-**Fallback = ScheduleWakeup** (in /loop dynamic mode). Use when the orchestrator session is an external actor registered via `register_agent` and timers can't fire (`timer_* tools require a Solo agent process bound to this MCP session...`).
-
-ScheduleWakeup cadence:
-- 270s — watching closely + cache warm
-- 1200–1800s — idle polls
-- Avoid 300–600s — worst of both (cache expired, little progress)
-
-Between wakes: `get_process_output`, `git log`, PR state are free.
-
-### Wake cadence calibration (P50, not P95)
-
-| Task class | Typical runtime | Wake target |
-|---|---|---|
-| Slash-command dispatch (review, counselors, finalize) | 2–8 min | 270s |
-| Brainstorm | 5–12 min | 270s then 600s |
-| Writing-plans | 5–15 min | 600s |
-| Plan reviewer (single agent) | 5–20 min | 600s |
-| PR reviewer + merge | 10–30 min | 900s |
-| Release engineering (cross-build + tag) | 30–120 min | 900s then 1800s |
-| Feature impl (multi-phase commit) | 30 min – several hours | 1500s |
-
-Re-calibrate after each wave: 3 wakes catching mid-flight → double; 3 catching "done 10 min ago" → halve.
-
-### Polling order on each wake
-
-Three checks, increasing durability:
-
-1. `get_process_output process_id=<N> lines=10` — grep last 10 for sentinel. Cheapest. Fails if process closed.
-2. `scratchpad_list` + filter `done/` prefix — survives process closure + session handoff.
-3. `list_processes` — status flips to idle when worker stops; pair with output tail to confirm sentinel landed (not crash).
-
-Close workers immediately after the sentinel is confirmed — never leave idle workers hanging.
+If no sentinel arrives, assume work is still running unless user asks for status or another concrete signal appears. Status checks are manual diagnostics, not scheduled monitoring.
 
 ## Subagent lifecycle hygiene
 
@@ -504,7 +467,7 @@ Close workers immediately after the sentinel is confirmed — never leave idle w
 
 | Anti-pattern | Fix |
 |---|---|
-| Idle-timer fires on already-idle process (briefing finished before work started). | Pattern C push on terminal events; idle-timer is safety-net only. |
+| Idle-timer fires on already-idle process (briefing finished before work started). | Pattern C push on terminal events. No idle timers. |
 | Reviewer dispatched on a docs-only PR. | Docs-only merges directly; reviewer table guides. |
 | Single-voice plan review marked "good enough." | Multi-reviewer brief (≥2 voices). Codex catches what Claude misses and vice-versa. |
 | Worktrees pile up — 10+ stale, GB consumed. | Cleanup orchestrator-side after every merge + at session orient. |
