@@ -8,17 +8,31 @@ Install one. Install the catalog. Built for [Scribe](https://github.com/Naoray/s
 scribe registry connect Naoray/skills
 ```
 
-## The five themes
+## Kits — install in bundles, not skill-by-skill
 
-1. **Daily workflow** — `plan-my-day`, `evaluate-day`, `session-plan`, `record`, `meeting`. Plan the day, capture what happens, close the loop — without leaving the agent.
-2. **System & web integration** — `apple-calendar`, `dev-browser`, `cleanup`. Drive Calendar.app, automate a real browser, prune project artifacts after a ship.
-3. **Release pipeline** — `changelog-pr`, `code-review-artifacts`, `visual-review`. PR bodies, comprehension diagrams, and rendered-output verification on the way to merge.
-4. **Multi-agent orchestration** — `orchestrator-mode`, `orchestrator-handoff`. Coordinate parallel agents over [Solo MCP](https://github.com/sublayerapp/solo); hand state to the next session before the context window collapses.
-5. **Methodology** — `research-mode`, `skill-creator`. Anti-hallucination citation discipline; author your own skills using the 5-part trigger contract and evidence-tier gating.
+Five stackable kits cover the catalog. Each maps to one theme — pick the kits that match your work, layer multiple if you do more than one thing.
+
+| Kit | Skills | Use it for |
+|---|---|---|
+| **`daily-workflow`** | `plan-my-day`, `evaluate-day`, `session-plan`, `record`, `meeting` | Plan, capture, and close the day from inside the agent. |
+| **`release-pipeline`** | `changelog-pr`, `code-review-artifacts`, `visual-review`, `cleanup` | PR bodies, comprehension diagrams, rendered-output verification, post-ship hygiene. |
+| **`orchestration`** | `orchestrator-mode`, `orchestrator-handoff` | Multi-agent coordination over [Solo MCP](https://github.com/sublayerapp/solo); state handoff between sessions. |
+| **`methodology`** | `research-mode`, `skill-creator` | Anti-hallucination citation discipline; author your own skills with the 5-part trigger contract. |
+| **`mac-productivity`** | `apple-calendar`, `dev-browser` | Calendar.app CRUD via AppleScript + persistent-page browser automation. |
+
+Reference each kit in your project's `.scribe.yaml`:
+
+```yaml
+kits:
+  - daily-workflow
+  - release-pipeline
+```
+
+Then `scribe sync`. Kits stack; add or remove individual skills on top with `add:` / `remove:`. Kit bodies live in [`kits/`](kits/) and are surfaced via `scribe.yaml`.
 
 ## What's inside
 
-### Daily workflow
+### Daily workflow (kit: `daily-workflow`)
 
 - **`plan-my-day`** — Fuse your calendar, reminders, and intent into a reviewed time-block schedule and a daily-note scaffold. Asks before it touches the calendar.
 - **`evaluate-day`** — Turn today's Running Log into a grounded end-of-day reflection inside the daily note. Won't overwrite without confirmation.
@@ -26,24 +40,24 @@ scribe registry connect Naoray/skills
 - **`record`** — `/record <message>` appends one deduplicated, timestamped entry to today's Running Log. Used by the other skills as their event-capture primitive.
 - **`meeting`** — Live note capture while a meeting is active. `/meeting <title>` opens a session; every later message becomes raw notes, decisions, and action items until `/meeting end`.
 
-### System & web integration
-
-- **`apple-calendar`** — Calendar.app CRUD on macOS: list, create, update, delete, search; handles recurrence safely. Direct AppleScript — no Google/Outlook bridging.
-- **`dev-browser`** — Persistent-page browser automation for QA, scraping, and login flows. Headless Chromium with state survival across commands. Refuses destructive or payment actions without explicit consent.
-- **`cleanup`** — Post-ship project hygiene. Classifies artifacts as remove / update / keep / review, applies changes only after you confirm. Not a disk-space tool.
-
-### Release pipeline
+### Release pipeline (kit: `release-pipeline`)
 
 - **`changelog-pr`** — Generate or refresh a release PR body and `CHANGELOG.md` in Keep a Changelog format. Detects squash vs merge style; emits only the sections that have entries.
 - **`code-review-artifacts`** — Diff briefs, ASCII flow maps, architecture x-rays. Comprehension artifacts for reviewers and AI agents about to touch unfamiliar code. Every artifact carries an explicit "Inspected / Not inspected" scope line.
 - **`visual-review`** — Rendered-output verification across browser pages, PRs, CLI commands, and TUIs. Captures screenshots/recordings plus a visible-issues report. Read-only — never commits.
+- **`cleanup`** — Post-ship project hygiene. Classifies artifacts as remove / update / keep / review, applies changes only after you confirm. Not a disk-space tool.
 
-### Multi-agent orchestration
+### macOS productivity (kit: `mac-productivity`)
+
+- **`apple-calendar`** — Calendar.app CRUD on macOS: list, create, update, delete, search; handles recurrence safely. Direct AppleScript — no Google/Outlook bridging.
+- **`dev-browser`** — Persistent-page browser automation for QA, scraping, and login flows. Headless Chromium with state survival across commands. Refuses destructive or payment actions without explicit consent.
+
+### Multi-agent orchestration (kit: `orchestration`)
 
 - **`orchestrator-mode`** — Convert the current session into a delegating coordinator over [Solo MCP](https://github.com/sublayerapp/solo). Sets agent-selection rules (codex for coding, claude for skills/slash-commands, gemini for second-opinion), worktree-by-default isolation, and scratchpad-based feedback capture.
 - **`orchestrator-handoff`** — A paste-ready prompt for the next orchestrator session. Captures in-flight agents, scratchpads, locked decisions, open PRs, and dispatch intent so the next window starts hot.
 
-### Methodology
+### Methodology (kit: `methodology`)
 
 - **`research-mode`** — Anti-hallucination mode: require citations, surface conflicts, refuse to present uncertain claims as fact. Toggleable; built for spec review and source-grounded analysis.
 - **`skill-creator`** — Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E / P / H) gating, and progressive disclosure. LLM-agnostic and registry-agnostic (scribe, `.claude/skills`, `.ai/skills`, custom backends). Mandatory reviewer pass before declaring done.
@@ -77,21 +91,35 @@ The router stays under ~120 lines, so the LLM sees only the contract on every in
 
 ### Via Scribe (recommended)
 
+Connect the registry once:
+
 ```bash
 scribe registry connect Naoray/skills
-scribe browse --registry Naoray/skills
-scribe add Naoray/skills:<skill-name> --yes
+```
+
+Then install by kit, by skill, or browse:
+
+```bash
+# Kit (recommended — bundles for a use case)
+# Declare kits in your project's .scribe.yaml under `kits:`, then:
+scribe sync
+
+# Single skill (interactive picker)
+scribe browse
+
+# Or by name (legacy add, still works)
+scribe add Naoray/skills:<skill-name>
 ```
 
 Scribe keeps the canonical copy in `~/.scribe/skills/` and links it into Claude Code, Cursor, Codex, and Gemini.
 
-Want all 15?
+Want all 15 skills at once?
 
 ```bash
-scribe registry connect Naoray/skills --install-all
+scribe install --all
 ```
 
-Requires scribe v0.9.0-beta.1 or later.
+Installs every catalog entry from connected registries in one shot.
 
 ### Let your AI set it up
 
@@ -105,11 +133,12 @@ Help me set up the Naoray/skills registry (https://github.com/Naoray/skills) for
 
 2. Connect the registry: `scribe registry connect Naoray/skills`.
 
-3. Ask whether I want to cherry-pick skills or install the whole catalog:
-   - Cherry-pick (default): `scribe browse --registry Naoray/skills`, show the list,
-     install my picks with `scribe add Naoray/skills:<name> --yes`.
-   - Whole catalog: `scribe registry connect Naoray/skills --install-all` (skip step 2
-     if you run this; requires scribe v0.9.0-beta.1+).
+3. Ask whether I want a kit, cherry-pick skills, or the whole catalog:
+   - Kit (recommended): show the five kits (daily-workflow, release-pipeline,
+     orchestration, methodology, mac-productivity), add my picks to the project's
+     `.scribe.yaml` under `kits:`, then run `scribe sync`.
+   - Cherry-pick: `scribe browse` (interactive picker) or `scribe add Naoray/skills:<name>`.
+   - Whole catalog: `scribe install --all`.
 
 4. Confirm final state with `scribe list`.
 
@@ -152,25 +181,31 @@ Past consolidations:
 
 ```text
 .
-├── plan-my-day/           # daily workflow
+├── plan-my-day/           # daily-workflow kit
 ├── evaluate-day/
 ├── session-plan/
 ├── record/
 ├── meeting/
-├── apple-calendar/        # system integration
-├── dev-browser/
-├── cleanup/
-├── changelog-pr/          # release pipeline
+├── changelog-pr/          # release-pipeline kit
 ├── code-review-artifacts/
 ├── visual-review/
-├── orchestrator-mode/     # multi-agent
+├── cleanup/
+├── orchestrator-mode/     # orchestration kit
 ├── orchestrator-handoff/
-├── research-mode/         # methodology
+├── research-mode/         # methodology kit
 ├── skill-creator/
-└── scribe.yaml            # registry manifest
+├── apple-calendar/        # mac-productivity kit
+├── dev-browser/
+├── kits/                  # kit manifests
+│   ├── daily-workflow.yaml
+│   ├── release-pipeline.yaml
+│   ├── orchestration.yaml
+│   ├── methodology.yaml
+│   └── mac-productivity.yaml
+└── scribe.yaml            # registry manifest (publishes catalog + kits)
 ```
 
-Each skill is self-contained — install one without the others.
+Each skill is self-contained — install one without the others, or pull in a kit.
 
 ## Contributing
 
