@@ -44,5 +44,3 @@ catalog:
       description: Generate a handoff prompt for a new orchestrator session. Captures in-flight agents, active scratchpads, pending user decisions, locked design decisions, open PRs + issues, and next-wave dispatch intent. Writes output to solo scratchpad `handoff/<project>-<date>` and surfaces the prompt for the user to copy into a fresh orchestrator.
     - name: visual-review
       source: github:Naoray/skills@main
-    - name: visual-review-cli
-      source: github:Naoray/skills@main
