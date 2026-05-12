@@ -22,7 +22,7 @@ When invoked with a title (e.g., `/meeting Team Standup`):
 
 2. **Create the raw notes file** at:
    ```
-   ~/context/meetings/YYYY-MM-DD-<slug>.md
+   <meetings-root>/YYYY-MM-DD-<slug>.md
    ```
    Where `<slug>` is a lowercase, hyphenated version of the title (e.g., `team-standup`).
 
@@ -82,7 +82,7 @@ When the user invokes `/meeting end`:
 
 2. **Generate the shareable version** at:
    ```
-   ~/context/meetings/YYYY-MM-DD-<slug>-share.md
+   <meetings-root>/YYYY-MM-DD-<slug>-share.md
    ```
 
 3. **Structure the shareable version** using this format:
@@ -131,7 +131,7 @@ When the user invokes `/meeting end`:
 
 ## File Locations
 
-All meeting files live in `~/context/meetings/`. Create the directory if it doesn't exist.
+All meeting files live under `<meetings-root>/` (backend variable — default `~/context/meetings/`; see [`references/paths.md`](references/paths.md) for overrides). Create the directory if it doesn't exist.
 
-- Raw notes: `~/context/meetings/YYYY-MM-DD-<slug>.md`
-- Shareable: `~/context/meetings/YYYY-MM-DD-<slug>-share.md`
+- Raw notes: `<meetings-root>/YYYY-MM-DD-<slug>.md`
+- Shareable: `<meetings-root>/YYYY-MM-DD-<slug>-share.md`

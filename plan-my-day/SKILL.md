@@ -16,10 +16,10 @@ Interactive daily planning workflow. Syncs all inputs, shows the landscape, coll
 
 - `icalBuddy` — reads all Apple + Google calendars (https://hasseg.org/icalBuddy/)
 - `gws calendar` — writes to Google calendars (https://github.com/saurabh0719/gws)
-- A reminders-sync script at `~/context/admin/scripts/sync-reminders.sh` — syncs Apple Reminders Inbox (user-supplied; simple `osascript` wrapper)
+- A reminders-sync script at `<context-root>/admin/scripts/sync-reminders.sh` — syncs Apple Reminders Inbox (user-supplied; simple `osascript` wrapper)
 - The `apple-calendar` skill installed (for native macOS calendar writes via AppleScript)
 
-This skill assumes the "context directory" layout from Hilary Gridley's [Context Directory and Daily Notes guide](https://www.writerbuilder.com/howiai#context-directory). If you don't have that layout, run `/plan-my-day` once and Claude will help bootstrap it.
+This skill uses `<context-root>` as a backend variable. The default backend is Hilary Gridley's "context directory" layout (defaults to `~/context/`). Substitute another root if your notes live elsewhere — see [`references/paths.md`](references/paths.md) for the full path table and override instructions. If the layout does not exist on first run, the skill bootstraps it.
 
 ===setup-start===
 **Execute these steps once, then use the Edit tool to delete the entire block from `===setup-start===` through `===setup-end===` (inclusive) from this file.**
@@ -36,8 +36,8 @@ If the placeholder is already gone, this block should have been deleted on a pre
 
 ### Step 1: Gather inputs (do silently, show results)
 
-1. Run `~/context/admin/scripts/sync-reminders.sh` to pull latest reminders
-2. Update `~/context/admin/reminders-organized.md` with any new items categorized
+1. Run `<context-root>/admin/scripts/sync-reminders.sh` to pull latest reminders
+2. Update `<context-root>/admin/reminders-organized.md` with any new items categorized
 3. Run `icalBuddy -f eventsToday` to get today's calendar events
 
 **Filter calendars:** Only show events from relevant calendars. Ignore the calendars listed in `<private_calendar_name_list>` (if this placeholder is still literal text, see the setup block above).
@@ -46,7 +46,7 @@ If the placeholder is already gone, this block should have been deleted on a pre
 
 Show the user:
 - **Today's fixed commitments** — existing calendar events with times
-- **Open reminders** — from `~/context/admin/reminders-organized.md`
+- **Open reminders** — from `<context-root>/admin/reminders-organized.md`
 - Then ask: **"What else do you need to get done today?"**
 
 ### Step 3: Build the schedule together
@@ -63,7 +63,7 @@ Show the user:
    - Default calendar for new events: `Personal` unless user specifies otherwise
    - Only use `gws calendar events insert` if the user explicitly wants an event on Google Calendar
 
-2. **Create daily note** at `~/context/admin/daily-notes/YYYY/MM-Month/YYYY-MM-DD.md`
+2. **Create daily note** at `<context-root>/admin/daily-notes/YYYY/MM-Month/YYYY-MM-DD.md`
 
 ### Daily Note Template
 
@@ -93,6 +93,6 @@ Create year/month folders (`YYYY/MM-Month/`) if they don't exist. Use zero-padde
 
 ## Reminders Files
 
-- `~/context/admin/reminders-inbox.md` — raw dump from sync script
-- `~/context/admin/reminders-organized.md` — categorized version (preserve existing categories, add new items)
-- `~/context/admin/scripts/sync-reminders.sh` — the sync script
+- `<context-root>/admin/reminders-inbox.md` — raw dump from sync script
+- `<context-root>/admin/reminders-organized.md` — categorized version (preserve existing categories, add new items)
+- `<context-root>/admin/scripts/sync-reminders.sh` — the sync script
