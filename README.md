@@ -3,6 +3,33 @@
 My personal registry of Claude Code, Cursor, and Codex skills.
 Built with [Scribe](https://github.com/Naoray/scribe).
 
+## Catalog shape
+
+Skills stay as top-level folders so Scribe can install them with stable names
+like `Naoray/skills:visual-review`.
+
+Larger skills use progressive disclosure internally:
+
+```text
+skill-name/
+  SKILL.md          # small router
+  workflows/        # loaded only for selected mode
+  principles/       # model/rubric files loaded only when needed
+  scripts/          # deterministic helpers
+  evals/            # skill tests, not runtime context
+```
+
+This keeps the registry flat while letting serious skills carry a clear
+foundation, workflow, and test surface.
+
+## Current curation
+
+- `code-review-artifacts` replaces `flow-review` and `xray`.
+- `visual-review` covers both browser UI and CLI/TUI review.
+- `changelog-pr` covers release PR bodies and `CHANGELOG.md` updates.
+- `recap`, `recap-report`, and `scribe-agent` are intentionally not in the
+  catalog.
+
 ## Let your AI set it up
 
 Paste this into Claude Code, Cursor, Codex, or any agentic LLM. Works whether scribe is installed or not:

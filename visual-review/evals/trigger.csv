@@ -1,0 +1,16 @@
+prompt,should_trigger,kind,notes
+"visually review PR #42 in the browser",true,explicit-web-review,classic web-review mode
+"screenshot the scribe list command output",true,explicit-cli-static,cli-review static capture (termshot)
+"record a vhs gif of the TUI for the sync command",true,explicit-cli-record,cli-review TUI recording (vhs)
+"check how this PR looks at mobile viewport",true,implicit-web-responsive,web-review with viewport
+"before/after visual regression for the design tweaks",true,explicit-regression,regression mode
+"visual QA on the landing page",true,explicit-web,web review of a live URL
+"review the CLI output of scribe browse",true,explicit-cli,cli-review static
+"is this design on brand?",false,taste-judgment,brand taste judgment out of scope; visual-review verifies rendered output not design taste
+"test the order submission form end-to-end",false,functional-qa,functional QA not visual; use a testing skill
+"migrate this app from Vue to React",false,stack-migration,frontend stack migration out of scope
+"deploy this PR to staging",false,deploy-action,deploy action not review
+"fix the alignment of the login button",false,code-fix,code fix not visual review
+"what should our color palette be?",false,design-decision,brand/design decision out of scope
+"audit this page for WCAG compliance",false,full-a11y-audit,full accessibility audit is broader; visual-review only covers visible-output verification
+"check if the responsive breakpoints render correctly across 3 viewports",true,explicit-web-responsive,web-review across viewports — should trigger

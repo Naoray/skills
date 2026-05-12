@@ -1,0 +1,16 @@
+prompt,should_trigger,kind,notes
+"show me the flow for the changes on this branch before I approve it",true,explicit-flow-map,classic flow-map mode call
+"xray this codebase and show me risky flows",true,explicit-xray,xray mode
+"what changed in this PR? give me a diff brief",true,explicit-diff-brief,diff-brief mode
+"walk me through how the auth middleware works",true,implicit-flow-map,understanding existing code
+"render an ASCII flow for the OrderController@store handler",true,explicit-flow-map,specific handler request
+"show me the flows",true,phrase-trigger,direct phrase from description; proactive nudge case
+"I'm about to merge this — review the architecture",true,explicit-xray,architecture review before merge
+"approve this PR",false,approval-action,approval is decision not comprehension
+"run the test suite on this branch",false,functional-qa,functional testing not review
+"refactor this function for readability",false,rewrite,refactor is rewrite not review; different skill
+"check this PR for security vulnerabilities",false,security-review,security review is a separate concern with different rubric
+"lint this file",false,style-check,linting not comprehension/risk-triage
+"write tests for the OrderController",false,write-tests,test authoring not review artifact
+"summarize this codebase for onboarding",false,docs-not-review,onboarding docs not change-impact review
+"check if there are merge conflicts",false,git-status,git mechanics not comprehension artifact
