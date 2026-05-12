@@ -1,16 +1,25 @@
 # Dispatch workflow
 
+**Transport: Solo MCP only.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — is a `mcp__solo__spawn_process` call. The Claude Code in-process `Task` / `Agent` / `subagent_type` tools are NOT a valid substitute and must never be used in orchestrator-mode. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to `mcp__solo__list_agent_tools` and spawn a real Solo process instead.
+
 For a coding task (file-modifying delegate).
 
 ```
+0. RESOLVE   mcp__solo__list_agent_tools → pick agent_tool_id for the delegate
+             family (Codex / Claude / Gemini / Cursor). NEVER hardcode IDs —
+             they're env-specific and rotate when Solo restarts. NEVER
+             substitute the Task/Agent tool here — in-process subagents share
+             the orchestrator's context, can't run in anvil worktrees, and
+             can't be Pattern-C monitored.
 1. SCOPE     Understand task. Read spec + code. Identify file surface. Parallelisable?
 2. TODO      Solo todo with branch, parent, file surface, acceptance criteria.
-3. SPAWN     mcp__solo__spawn_process kind=agent, agent_tool_id=<from list_agent_tools>,
+3. SPAWN     mcp__solo__spawn_process kind=agent, agent_tool_id=<resolved>,
              name=<task-slug>
-4. BRIEF     send_input with full self-contained brief (template below).
+4. BRIEF     mcp__solo__send_input with full self-contained brief (template below).
 5. MONITOR   Pattern C push only. No polling timers. No ScheduleWakeup.
 6. REVIEW    Verify commits, run tests, review diff + PR description.
-7. CLOSE     close_process. If worktree orphaned, dispatch anvil-agent for cleanup.
+7. CLOSE     mcp__solo__close_process. If worktree orphaned, dispatch anvil-agent
+             for cleanup (also via Solo).
 ```
 
 For a slash-command delegate (read-only or stateless action), use the slash-command brief template below and skip the worktree step.

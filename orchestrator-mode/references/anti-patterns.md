@@ -4,6 +4,7 @@ Accumulated lessons. Re-read at session start.
 
 | Anti-pattern | Fix |
 |---|---|
+| Dispatched via Claude Code's in-process `Task` / `Agent` / `subagent_type` tool instead of Solo MCP. | Forbidden in orchestrator-mode. In-process subagents share orchestrator context, can't run in anvil worktrees, can't be Pattern-C monitored, and silently collapse parallel work. ALL delegates must be spawned via `mcp__solo__spawn_process` after resolving `agent_tool_id` from `mcp__solo__list_agent_tools`. If Solo isn't reachable: stop and report — don't fall back. |
 | Idle-timer fires on already-idle process (briefing finished before work started). | Pattern C push on terminal events. No idle timers. |
 | Reviewer dispatched on a docs-only PR. | Docs-only merges directly; reviewer table guides. |
 | Single-voice plan review marked "good enough." | Multi-reviewer brief (≥2 voices). Codex catches what Claude misses and vice-versa. |
