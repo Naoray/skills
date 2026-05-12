@@ -1,5 +1,0 @@
-interface:
-  display_name: Skill Creator
-  short_description: Author or revise an AI-agent skill (router + workflows + evals)
-  default_prompt: |
-    I want to make a skill for the following workflow:

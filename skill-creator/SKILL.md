@@ -104,5 +104,5 @@ Skills move through active → merge candidate → archived. Run a registry swee
 - `references/registry-integration.md` — per-backend integration steps
 - `assets/SKILL_TEMPLATE.md` — scaffold for non-router skills
 - `assets/ROUTER_TEMPLATE.md` — scaffold for router skills with workflows/
-- `evals/trigger.csv` — this skill's own trigger evals (20 prompts)
-- `evals/checks.md` — universal must-pass checks (15 deterministic rules)
+- `evals/trigger.csv` — this skill's own trigger evals (20 prompts, including 10 near-miss negatives)
+- `evals/checks.md` — canonical must-pass checks (C1–C15), inherited by default by every skill in this registry

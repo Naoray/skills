@@ -68,12 +68,15 @@ No sidecars. Skill is auto-discovered when working in that project.
 
 ## Generating sidecars
 
-Sidecars should be generated, not hand-maintained:
+Sidecars are generated, not hand-maintained. Hand-edited sidecars drift the moment `SKILL.md` changes.
 
-- The host registry manager (e.g., scribe) generates them at install/sync time.
-- Or `workflows/package.md` step 1 generates them as part of release.
+Generation paths (pick one):
 
-Hand-edited sidecars drift the moment `SKILL.md` changes. Treat them as derived artifacts.
+1. **Registry-manager generation** at install/sync time (e.g., scribe templates `agents/openai.yaml` from the skill's frontmatter when syncing to a Codex install). Preferred — single source of truth in `SKILL.md`, no per-skill maintenance.
+2. **`workflows/package.md` step 1** — author runs a generator script at release time. The script must be checked into the registry once, not duplicated per skill.
+3. **Skip sidecar entirely** when no host actively consumes it. A committed `agents/openai.yaml` with no consumer is decorative and invites drift; delete it.
+
+The skill-creator skill itself does NOT ship a Codex sidecar at this time, because no generator yet exists in the registry. When scribe (or another registry manager) adds a sidecar generator, regenerate then.
 
 ## When NOT to use sidecars
 
