@@ -1,0 +1,7 @@
+apiVersion: scribe/v1
+kind: Kit
+name: orchestration
+description: Multi-agent orchestration over Solo MCP — delegate parallel work, gate merges via reviewer agents, and hand state to the next session before the context window collapses.
+skills:
+  - orchestrator-mode
+  - orchestrator-handoff

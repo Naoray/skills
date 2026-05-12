@@ -1,0 +1,7 @@
+apiVersion: scribe/v1
+kind: Kit
+name: mac-productivity
+description: macOS-specific productivity primitives — Calendar.app CRUD via AppleScript and a persistent-page browser automation surface for QA, scraping, and login flows.
+skills:
+  - apple-calendar
+  - dev-browser

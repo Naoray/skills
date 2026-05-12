@@ -1,0 +1,9 @@
+apiVersion: scribe/v1
+kind: Kit
+name: release-pipeline
+description: PR bodies, comprehension diagrams, rendered-output verification, and post-ship hygiene on the way to merge. Pairs with any code-review workflow.
+skills:
+  - changelog-pr
+  - code-review-artifacts
+  - visual-review
+  - cleanup
