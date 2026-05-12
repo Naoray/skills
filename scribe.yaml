@@ -37,3 +37,19 @@ catalog:
     - name: skill-creator
       source: github:Naoray/skills@main
       description: Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E/P/H) gating, and progressive disclosure. LLM- and registry-agnostic; supports scribe, .claude/skills, .ai/skills, and custom backends. Mandatory reviewer pass before declaring done.
+kits:
+    - name: daily-workflow
+      description: Plan, capture, and close the day from inside the agent — daily-notes-driven workflow with meeting capture, session planning, running log, and end-of-day reflection.
+      path: kits/daily-workflow.yaml
+    - name: release-pipeline
+      description: PR bodies, comprehension diagrams, rendered-output verification, and post-ship hygiene on the way to merge.
+      path: kits/release-pipeline.yaml
+    - name: orchestration
+      description: Multi-agent orchestration over Solo MCP — delegate parallel work, gate merges via reviewers, hand state to the next session.
+      path: kits/orchestration.yaml
+    - name: methodology
+      description: Anti-hallucination citation discipline plus the canonical skill-authoring procedure (5-part trigger contract, evidence-tier gating).
+      path: kits/methodology.yaml
+    - name: mac-productivity
+      description: macOS-specific productivity primitives — Calendar.app CRUD via AppleScript and a persistent-page browser automation surface.
+      path: kits/mac-productivity.yaml

@@ -1,0 +1,7 @@
+apiVersion: scribe/v1
+kind: Kit
+name: methodology
+description: Anti-hallucination citation discipline plus the canonical skill-authoring procedure (5-part trigger contract, evidence-tier gating, progressive disclosure). For users who write or audit skills.
+skills:
+  - research-mode
+  - skill-creator

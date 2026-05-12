@@ -1,0 +1,10 @@
+apiVersion: scribe/v1
+kind: Kit
+name: daily-workflow
+description: Plan, capture, and close the day from inside the agent. Daily-notes-driven workflow with live meeting capture, session planning, running-log capture, and end-of-day reflection.
+skills:
+  - plan-my-day
+  - evaluate-day
+  - session-plan
+  - record
+  - meeting
