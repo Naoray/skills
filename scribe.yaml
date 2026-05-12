@@ -32,7 +32,7 @@ catalog:
       source: github:Naoray/skills@main
     - name: update-changelog
       source: github:Naoray/skills@main
-    - name: flow-review
+    - name: code-review-artifacts
       source: github:Naoray/skills@main
     - name: research-mode
       source: github:Naoray/skills@main
@@ -45,6 +45,4 @@ catalog:
     - name: visual-review
       source: github:Naoray/skills@main
     - name: visual-review-cli
-      source: github:Naoray/skills@main
-    - name: xray
       source: github:Naoray/skills@main
