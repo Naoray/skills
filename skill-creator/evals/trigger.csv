@@ -1,0 +1,21 @@
+prompt,should_trigger,kind,notes
+"let's make a skill for refreshing my Spotify playlist every Friday — I've done this 4 times manually now",true,explicit-direct,classic create flow with prior invocation evidence
+"/skill-creator",true,explicit-slash,direct invocation
+"can you turn this workflow we just did into a reusable skill?",true,implicit-conversation,intent-from-conversation case from workflows/create.md step 1
+"the trigger description for my evaluate-day skill keeps firing on wrong prompts — can you fix it?",true,revise,revise an existing SKILL.md
+"I keep writing the same three-step debugging dance with you. Save it as a skill.",true,implicit-pattern,user surfaces repetition; tier=P likely
+"add a skill that runs accessibility audits when I ask",true,explicit-add,but skill must verify ≥2 prior real invocations exist
+"merge the changelog-pr and update-changelog skills into one",true,merge,covered by workflows/revise.md merge branch
+"audit my registry against the skill-creator contract",true,evaluate,calls workflows/evaluate.md across all skills
+"write me a snippet that formats a commit message",false,one-shot-snippet,classic disqualifier — snippet not skill
+"channel a 10x senior engineer when reviewing my code",false,persona,persona without domain model; H-tier vibes; suggest inline prompt instead
+"set up a benchmark loop to test my prompts against 50 variations",false,eval-loop,eval/benchmark is a separate kit
+"can you make my agent's responses more punchy and direct?",false,style-prompt,style/voice preference, not a workflow with artifact
+"draft a one-off email to my landlord about the broken sink",false,one-shot-task,one-off task, no repetition
+"refactor this 200-line function for readability",false,one-shot-code,coding task, not skill authoring
+"how does the skill-creator skill work? walk me through it",false,explain-not-create,documentation request; read the skill, don't invoke creation
+"create a Cursor rule that warns me when I'm about to commit to main",false,cursor-rule-not-skill,near-miss — Cursor rules are sidecars, not skills; skill-creator covers skills, not standalone tool rules
+"convert this PRD into an agent prompt",false,prompt-engineering,prompt engineering ≠ skill authoring; no recurring workflow
+"give me a markdown template for sprint retros",false,template-request,template/asset request, not a skill with trigger logic
+"why didn't my skill trigger when I said X?",false,debug-trigger,trigger debugging; could use workflows/evaluate.md but the request itself is a question not a creation
+"can you skill-ify the part where you brainstorm names for my startup?",false,brainstorm-vibes,brainstorming has no stable artifact; H-tier; suggest inline prompt
