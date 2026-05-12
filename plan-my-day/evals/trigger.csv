@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"Plan my day",true,explicit,"Direct skill invocation."
+"Help me schedule today around my calendar and reminders",true,explicit,"Combines calendar and reminders into day plan."
+"I have meetings at 10 and 3; build a realistic plan for the rest of today",true,contextual,"User wants time blocks around fixed commitments."
+"Can you turn my tasks into calendar blocks for tomorrow?",true,contextual,"Target date not today; still daily planning."
+"Let's review my reminders and decide what fits today",true,implicit,"Daily planning from reminders."
+"Make a daily note and schedule for today",true,explicit,"Produces daily note plus schedule."
+"What is on my calendar today?",false,near_miss,"Calendar lookup only; no schedule construction."
+"Add lunch with Sam to my calendar",false,near_miss,"Single event creation, not day planning."
+"Record that I finished the billing fix",false,near_miss,"Running log entry belongs to record."
+"Evaluate how yesterday went",false,near_miss,"Reflection synthesis belongs to evaluate-day."
+"Help me build a weekly roadmap",false,near_miss,"Broader planning than one daily schedule."
+"Summarize my reminders list",false,near_miss,"Reminder summary only, no collaborative day plan."

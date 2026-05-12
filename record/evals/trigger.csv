@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"/record finished payroll export bug",true,explicit,"Manual log entry."
+"Record that I started the migration review",true,explicit,"Natural manual trigger."
+"Log this in today's running log: blocker resolved by config change",true,explicit,"Targets daily running log."
+"We shipped PR 42 and moved to onboarding fixes",true,contextual,"Meaningful event can be logged automatically."
+"Decision made: defer alerts until next sprint",true,contextual,"Decision belongs in running log."
+"I hit a blocker with staging credentials",true,contextual,"Blocker event is meaningful."
+"Write a full journal entry about my day",false,near_miss,"Too broad; not one-line running log."
+"Start meeting notes for product sync",false,near_miss,"Meeting mode belongs to meeting."
+"Evaluate today's running log",false,near_miss,"Reflection belongs to evaluate-day."
+"Plan tomorrow around reminders",false,near_miss,"Daily planning belongs to plan-my-day."
+"Add a calendar block for focus time",false,near_miss,"Calendar event creation, not log entry."
+"Transcribe this voice memo",false,near_miss,"Transcription task, not running log capture."

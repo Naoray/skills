@@ -1,9 +1,14 @@
 ---
 name: session-plan
-description: Generate a focused plan for the upcoming practice/work session. Reads persistent context in ~/Context/<domain>/ (learning path, progress log, latest measurements) and produces a prioritized session plan that answers "what do I need to worry about right now?" — and just as importantly, what NOT to worry about. Invocable with /session-plan [domain] [optional notes].
+description: Use when the user says "/session-plan", "what should my next session look like?", or wants a focused practice/work block from current progress. Inputs - domain name if not default, time available, user state or constraints, and persistent domain context such as profile, learning path, progress log, subject notes, and recent measurements. Do not use when the user wants broad curriculum design, post-session analysis, or generic productivity advice; use planning, analysis, or coaching skills instead. Produces a prioritized session plan with one main outcome, timed blocks, and what to ignore. Escalate if context is missing, stale, ambiguous, or user constraints conflict with the likely plan.
 ---
 
 # Session Plan
+
+**Evidence tier**: P  
+**Basis**: Practitioner deliberate-practice planning, progress-log review, and constraint-based session design.  
+**Source IDs**: session-plan-skill, deliberate-practice-workflow, context-directory-progress-log  
+**Reviewed**: 2026-05-12
 
 Generate a focused, opinionated plan for the user's next practice/work session. The goal is to **reduce decision fatigue** — the user should walk away knowing exactly what to do, in what order, and what to deliberately ignore this session.
 

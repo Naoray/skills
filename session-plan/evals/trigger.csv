@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"/session-plan",true,explicit,"Direct invocation with default domain."
+"/session-plan bass 30 minutes only",true,explicit,"Direct invocation with domain and constraint."
+"What should my next practice session look like?",true,explicit,"Natural phrasing for session plan."
+"I have 20 minutes and my hand is sore; plan my bass work",true,contextual,"Uses constraints and domain context."
+"Before I start, tell me what to drill and what to ignore",true,implicit,"Core artifact is focused session plan."
+"Build a focused writing session from my progress log",true,contextual,"Non-bass domain still matches pattern."
+"Design a six-month bass curriculum",false,near_miss,"Long-range curriculum, not one session."
+"Analyze my last recorded take",false,near_miss,"Post-session analysis, not pre-session planning."
+"Log that I practiced bridge at 120 BPM",false,near_miss,"Progress logging, not plan generation."
+"Give me generic productivity tips for focus",false,near_miss,"Advice without persistent domain context."
+"Plan my workday calendar",false,near_miss,"Daily calendar planning belongs to plan-my-day."
+"Create a workout plan for the next month",false,near_miss,"Program design, not one domain session."
