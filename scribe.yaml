@@ -48,3 +48,6 @@ catalog:
       source: github:Naoray/skills@main
     - name: xray
       source: github:Naoray/skills@main
+    - name: skill-creator
+      source: github:Naoray/skills@main
+      description: Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E/P/H) gating, and progressive disclosure. LLM- and registry-agnostic; supports scribe, .claude/skills, .ai/skills, and custom backends. Mandatory reviewer pass before declaring done.
