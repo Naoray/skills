@@ -18,11 +18,13 @@ Generate a focused, opinionated plan for the user's next practice/work session. 
 - User says "what should my next session look like?" or similar
 - User is about to start a practice/work block and wants a focused plan
 
-Default domain is `bass` if not specified, because that's the first persistent context directory. Future domains (writing, study, language) can live under `~/Context/<domain>/` with the same layout.
+Default domain is `bass` if not specified, because that's the first persistent context directory. Future domains (writing, study, language) live under `<context-root>/<domain>/` with the same layout.
+
+`<context-root>` is a backend variable — see [`references/paths.md`](references/paths.md) for the default (`~/Context/`) and override instructions.
 
 ## Arguments
 
-- `$1` — optional domain (default: `bass`). Maps to `~/Context/<domain>/`.
+- `$1` — optional domain (default: `bass`). Maps to `<context-root>/<domain>/`.
 - Remaining args — free-form notes the user wants factored in ("I only have 20 minutes", "hand is sore", "want to focus on the bridge").
 
 Examples:
@@ -34,11 +36,11 @@ Examples:
 
 Read these files (ignore missing ones gracefully):
 
-1. `~/Context/<domain>/profile.md` — player/writer/learner profile
-2. `~/Context/<domain>/learning-path.md` — current phase + strategy
-3. `~/Context/<domain>/progress.md` — most recent entries (just the top ~60 lines is enough)
-4. `~/Context/<domain>/songs/` or equivalent subject directory — per-subject notes
-5. `~/Context/<domain>/logs/takes.csv` — most recent 3-5 rows for the latest measurements
+1. `<context-root>/<domain>/profile.md` — player/writer/learner profile
+2. `<context-root>/<domain>/learning-path.md` — current phase + strategy
+3. `<context-root>/<domain>/progress.md` — most recent entries (just the top ~60 lines is enough)
+4. `<context-root>/<domain>/songs/` or equivalent subject directory — per-subject notes
+5. `<context-root>/<domain>/logs/takes.csv` — most recent 3-5 rows for the latest measurements
 
 If the domain has no `logs/takes.csv` (because it's not a measured domain), skip that step.
 
@@ -106,7 +108,7 @@ Output a concise, scannable plan. Stick to this structure:
 
 ## Step 4 — Offer to log the plan
 
-After displaying the plan, ask the user whether to log the intent to `~/Context/<domain>/progress.md` (e.g. "planning X, Y, Z for tomorrow's session"). Do NOT auto-write. Only log if the user says yes.
+After displaying the plan, ask the user whether to log the intent to `<context-root>/<domain>/progress.md` (e.g. "planning X, Y, Z for tomorrow's session"). Do NOT auto-write. Only log if the user says yes.
 
 ## Step 5 — Offer the post-session workflow
 
