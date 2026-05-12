@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"/meeting Product Sync",true,explicit,"Starts meeting mode with title."
+"/meeting end",true,explicit,"Ends active meeting mode."
+"Start meeting notes for Design Review",true,explicit,"Natural start trigger."
+"In this meeting, capture fragments as I send them",true,contextual,"Live capture request."
+"Meeting note: Alex owns launch checklist",true,contextual,"Should trigger only if meeting mode active."
+"Turn these live bullets into action items and decisions while we talk",true,implicit,"Live meeting scribe behavior."
+"Summarize this meeting transcript from last week",false,near_miss,"Post-hoc summarization, not live meeting mode."
+"Draft an agenda for tomorrow's meeting",false,near_miss,"Agenda writing, not note capture."
+"Record that I finished the meeting prep",false,near_miss,"Daily running log belongs to record."
+"Create calendar event for team standup",false,near_miss,"Calendar event creation, not meeting mode."
+"Take notes on this article",false,near_miss,"General note-taking outside meeting."
+"What meetings do I have today?",false,near_miss,"Calendar lookup only."

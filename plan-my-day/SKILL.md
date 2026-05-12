@@ -1,13 +1,14 @@
 ---
 name: plan-my-day
-description: Daily planning workflow — syncs reminders, checks calendar, collaboratively builds a schedule, adds events, and creates a daily note. Use when the user says "plan my day".
-source:
-  url: https://www.writerbuilder.com/howiai#plan-my-day
-  author: Hilary Gridley
-  note: Adapted with attribution
+description: Use when the user says "plan my day", "help me schedule today", or asks to combine calendar events, reminders, and new tasks into a day plan. Inputs - target date if not today, relevant calendars/reminders access, calendar filters, available tasks, and approval before writing events. Do not use when the user only wants to list calendar events or capture a quick note; use calendar lookup or record instead. Produces a reviewed time-block schedule, calendar event plan, and daily note scaffold. Escalate if calendars/reminders are unavailable, calendar filters are missing, fixed commitments conflict, or the user has not approved writes.
 ---
 
 # Plan My Day
+
+**Evidence tier**: P  
+**Basis**: Practitioner time-blocking, calendar review, and daily notes workflow adapted from Hilary Gridley's context directory guidance.  
+**Source IDs**: writerbuilder-howiai-plan-my-day, writerbuilder-howiai-context-directory, apple-calendar-skill  
+**Reviewed**: 2026-05-12
 
 Interactive daily planning workflow. Syncs all inputs, shows the landscape, collaborates on a schedule, then commits to calendar and daily note.
 

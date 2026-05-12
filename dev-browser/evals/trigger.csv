@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"Go to https://example.com and take a screenshot.",true,explicit,"Browser navigation and screenshot"
+"Click the pricing tab on the open page.",true,implicit,"Persistent page state"
+"Fill out this web form with the data I provide.",true,explicit,"Form automation"
+"Scrape the visible product names from this page.",true,casual,"Browser-visible extraction"
+"Log into the test site and verify the dashboard loads.",true,explicit,"Browser session; may escalate for credentials"
+"Automate checking this web app flow.",true,explicit,"Browser workflow"
+"Run JavaScript in the current browser page to inspect links.",true,contextual,"Sandboxed browser script"
+"Fetch this JSON API endpoint.",false,near-miss,"Plain HTTP request is better"
+"Write a Playwright regression test file.",false,near-miss,"Test suite artifact, not dev-browser operation"
+"Edit the HTML locally so the button is blue.",false,near-miss,"File edit task"
+"Explain how browsers cache CSS.",false,near-miss,"Conceptual browser topic"
+"Design a landing page for my startup.",false,near-miss,"Frontend creation, not browser automation"

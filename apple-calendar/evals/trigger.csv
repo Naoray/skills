@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"List my Apple Calendar calendars.",true,explicit,"Calendar.app calendar listing"
+"What events do I have tomorrow in Work?",true,implicit,"Needs cal-events with calendar filter"
+"Create a Calendar.app event called Dentist next Tuesday 2-3pm.",true,explicit,"Calendar.app write"
+"Move event UID 123 to 4pm.",true,explicit,"Event UID update"
+"Search my calendar for tax appointment.",true,casual,"Calendar event search"
+"Delete this recurring standup from Apple Calendar.",true,explicit,"Triggers but should escalate because recurring delete removes series"
+"Add FREQ=WEEKLY;BYDAY=MO to this Apple Calendar event.",true,contextual,"Recurrence syntax"
+"Help me choose a better meeting time.",false,near-miss,"Scheduling advice, not Calendar.app CRUD"
+"Use Google Calendar API to create an event.",false,near-miss,"Service-specific alternative"
+"Export my Outlook calendar to ICS.",false,near-miss,"Outlook/ICS workflow"
+"What does UID mean in iCalendar?",false,near-miss,"Concept explanation"
+"Write a reminder app UI.",false,near-miss,"App-building task"

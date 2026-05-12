@@ -1,9 +1,14 @@
 ---
 name: orchestrator-handoff
-description: Generate a handoff prompt for a new orchestrator session. Captures in-flight agents, active scratchpads, pending user decisions, locked design decisions, open PRs + issues, and next-wave dispatch intent. Writes output to solo scratchpad `handoff/<project>-<date>` and surfaces the prompt for the user to copy into a fresh orchestrator.
+description: Use when the user says "time for a handoff", "start a new orchestrator", asks to preserve session state, or context budget is tight during coordinated agent work. Inputs - current project, Solo process state, active todos/scratchpads/timers, open PRs/issues, recent git activity, and durable memory references. Do not use when the user only wants a brief status update or progress summary; answer that directly without producing a handoff artifact. Produces a read-only handoff scratchpad plus a paste-ready prompt for the next orchestrator session. Escalate if required state sources are unavailable, project identity is ambiguous, or the user wants agents stopped or repo state changed.
 ---
 
 # Orchestrator Handoff
+
+**Evidence tier**: P
+**Basis**: Practitioner-backed session handoff, incident-transfer, and distributed coordination workflows.
+**Source IDs**: Solo MCP scratchpad/process workflow; MemPalace durable-memory workflow; Naoray/skills orchestrator-handoff prior art.
+**Reviewed**: 2026-05-12
 
 Generate a handoff prompt when:
 - User signals session-switch intent ("time for a handoff", "start a new orchestrator").

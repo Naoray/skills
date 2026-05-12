@@ -1,9 +1,14 @@
 ---
 name: research-mode
-description: Use when the user wants to toggle research mode on/off, enforce anti-hallucination constraints, require citations for claims, or work in contexts where accuracy and source grounding are critical (academic research, fact-checking, documentation review, technical specifications).
+description: Use when the user asks to enable research mode, turn research mode on/off, require citations, fact-check claims, review technical specifications, or work where source grounding and anti-hallucination constraints matter. Inputs - research question, documents or sources to inspect, citation expectations, and whether mode should persist. Do not use when the task is creative brainstorming, drafting fiction, or casual ideation without factual claims; use normal generation instead. Produces cited answers grounded in verified sources and direct quotes when analyzing documents. Escalate if sources conflict, reliable evidence is unavailable, citations cannot be verified, or the user asks to present uncertain claims as fact.
 ---
 
 # Research Mode
+
+**Evidence tier**: E
+**Basis**: Anti-hallucination guardrail workflow based on source grounding, uncertainty disclosure, and citation verification.
+**Source IDs**: Anthropic Reduce Hallucinations documentation
+**Reviewed**: 2026-05-12
 
 Anti-hallucination mode with three simultaneous constraints. Stay in this mode until the user says to exit.
 

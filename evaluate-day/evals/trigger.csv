@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"/evaluate-day",true,explicit,"Direct invocation for today."
+"/evaluate-day yesterday",true,explicit,"Direct invocation with relative date."
+"Evaluate my day from the running log",true,explicit,"Natural-language trigger."
+"Fill in today's end-of-day reflection from my log",true,contextual,"Target artifact is reflection section."
+"What went well today based on my daily note?",true,implicit,"Reflection synthesis from note."
+"Turn 2026-04-09 into an end-of-day reflection",true,contextual,"Explicit date."
+"Plan my day tomorrow",false,near_miss,"Forward planning belongs to plan-my-day."
+"/record shipped the auth fix",false,near_miss,"Manual running log entry belongs to record."
+"Write a personal journal entry about my mood",false,near_miss,"Freeform journaling, not log-grounded synthesis."
+"Summarize this meeting transcript",false,near_miss,"Meeting/content summary, not daily note reflection."
+"What tasks are still open in reminders?",false,near_miss,"Reminder lookup, not end-of-day evaluation."
+"Overwrite yesterday's reflection with this new version",false,near_miss,"Dangerous overwrite request needs direct edit flow, not automatic synthesis."

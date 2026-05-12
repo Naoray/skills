@@ -1,9 +1,14 @@
 ---
 name: record
-description: Silently append timestamped entries to today's daily note running log. Runs automatically throughout every session when meaningful events happen. Also invocable manually with /record.
+description: Use when the user says "/record <message>" or when a meaningful workday event needs a concise timestamped entry in today's running log. Inputs - exact message for manual entries, current date/time, daily note location, and enough context to judge whether an automatic entry is meaningful. Do not use when the user wants a full journal entry, meeting notes, or end-of-day synthesis; use writing, meeting, or evaluate-day instead. Produces one deduplicated timestamped Running Log entry in today's daily note. Escalate if the daily note path cannot be created, the entry would duplicate existing content, or automatic logging would expose sensitive content.
 ---
 
 # Record — Running Log
+
+**Evidence tier**: H  
+**Basis**: Useful heuristic for lightweight daily work logs and event capture, adapted from context directory daily notes practice.  
+**Source IDs**: record-skill, writerbuilder-howiai-context-directory, plan-my-day-skill  
+**Reviewed**: 2026-05-12
 
 Append timestamped one-line entries to the Running Log section of today's daily note.
 

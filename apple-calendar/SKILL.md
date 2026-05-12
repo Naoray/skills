@@ -1,6 +1,6 @@
 ---
 name: apple-calendar
-description: Apple Calendar.app integration for macOS. CRUD operations for events, search, and multi-calendar support.
+description: Use when the user asks to list Apple Calendar calendars or events, create/update/delete events, search appointments, or manage recurrence in Calendar.app on macOS. Inputs - calendar name when needed, event UID for read/update/delete, event title, start/end times, location/description/recurrence details for writes. Do not use when the user needs Google/Outlook calendar APIs, cross-platform sync, or general scheduling advice; use a service-specific calendar integration instead. Produces Calendar.app script commands and parsed event/calendar results. Escalate if calendar permissions are missing, the target calendar is read-only, dates are ambiguous, or deleting a recurring event could remove an entire series.
 metadata: {"clawdbot":{"emoji":"📅","os":["darwin"]}}
 source:
   url: https://www.writerbuilder.com/howiai#connect-calendar
@@ -9,6 +9,11 @@ source:
 ---
 
 # Apple Calendar
+
+**Evidence tier**: P
+**Basis**: Practitioner workflow for macOS Calendar.app automation through AppleScript-backed shell commands.
+**Source IDs**: skill apple-calendar scripts/cal-list.sh, scripts/cal-events.sh, scripts/cal-create.sh; WriterBuilder calendar-agent pattern
+**Reviewed**: 2026-05-12
 
 Interact with Calendar.app via AppleScript. Run scripts from: `cd {baseDir}`
 

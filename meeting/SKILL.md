@@ -1,9 +1,14 @@
 ---
 name: meeting
-description: "Live meeting note-taker. Use when the user says /meeting to start or end a meeting session. Invoke with `/meeting <title>` to begin capturing notes, `/meeting end` to finalize. While active, every user message is a meeting note — structure it, don't ask clarifying questions about the content."
+description: Use when the user says "/meeting <title>", "/meeting end", or wants live meeting note capture from raw fragments during an active meeting. Inputs - meeting title, type, attendees, active meeting state, and real-time notes or end command. Do not use when the user wants post-hoc meeting summarization, a transcript cleanup, or general note-taking outside meeting mode; use summarization or writing skills instead. Produces structured raw notes, action items, decisions, and a shareable meeting summary for review. Escalate if no title is provided, no meeting is active on end, another meeting is already active, or content appears sensitive enough to require confirmation before writing.
 ---
 
 # Meeting Mode
+
+**Evidence tier**: P  
+**Basis**: Practitioner meeting-minutes workflow for live capture, action item routing, decision logs, and shareable summaries.  
+**Source IDs**: meeting-skill, meeting-minutes-practice, context-directory-meetings  
+**Reviewed**: 2026-05-12
 
 A toggleable mode that turns Claude into a live meeting scribe. The user feeds you raw bullet points, fragments, and observations in real-time during a meeting. Your job is to structure them into clean, organized notes — not to ask questions or slow the user down.
 

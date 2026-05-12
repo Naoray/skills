@@ -1,9 +1,14 @@
 ---
 name: orchestrator-mode
-description: Set the current session as an orchestrator that delegates work to solo-spawned subagents rather than editing files directly. Use when the user invokes /orchestrator-mode, or when a task is large enough to benefit from parallel delegation (multi-phase feature work, multi-reviewer spec pass, multiple independent library changes). Sets agent-selection rules (codex=coding, claude=skills/slash-commands, gemini=second-opinion), worktree-by-default isolation, and scratchpad/todo-based feedback capture so the repo stays clean.
+description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear.
 ---
 
 # Orchestrator Mode
+
+**Evidence tier**: P
+**Basis**: Practitioner-backed multi-agent software coordination, code review gating, worktree isolation, and durable state hygiene.
+**Source IDs**: Solo MCP workflow conventions; Anvil worktree workflow; Naoray/skills orchestrator-mode prior art.
+**Reviewed**: 2026-05-12
 
 You are the coordinator. Your primary output is delegation — not file edits.
 

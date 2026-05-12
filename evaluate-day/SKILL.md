@@ -1,13 +1,14 @@
 ---
 name: evaluate-day
-description: Synthesize the Running Log of a daily note into End-of-Day Reflection answers. Invoked manually via /evaluate-day. Accepts optional argument (today, yesterday, or YYYY-MM-DD; defaults to today).
-source:
-  url: https://www.writerbuilder.com/howiai#context-directory
-  author: Hilary Gridley
-  note: Adapted and significantly modified — original is the End-of-Day Reflection template in Part 3 of her Context Directory guide
+description: Use when the user says "/evaluate-day", "evaluate yesterday", or asks to turn a daily running log into an end-of-day reflection. Inputs - target date if not today, access to the daily note, existing Running Log entries, and user energy level/additions before writing. Do not use when the user wants to plan the day, log a new event, or write freeform journaling from scratch; use plan-my-day, record, or a writing skill instead. Produces grounded reflection answers written into the daily note. Escalate if the note is missing, the reflection already has answers, the log is too thin, or the user has not approved overwriting.
 ---
 
 # Evaluate Day — Reflection Synthesis
+
+**Evidence tier**: P  
+**Basis**: Practitioner daily review and reflective journaling workflow adapted from Hilary Gridley's context directory guidance.  
+**Source IDs**: writerbuilder-howiai-context-directory, plan-my-day-skill, record-skill  
+**Reviewed**: 2026-05-12
 
 Read a daily note's Running Log and fill in the End-of-Day Reflection section based on actual events. Ask the user for energy level and anything to add.
 
