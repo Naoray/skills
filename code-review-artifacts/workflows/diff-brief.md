@@ -1,6 +1,6 @@
 # Diff Brief
 
-Read `principles/risk.md` when judging findings.
+Read `references/principles/risk.md` when judging findings.
 
 ## Steps
 

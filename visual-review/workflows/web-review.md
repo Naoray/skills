@@ -1,6 +1,6 @@
 # Web Review
 
-Read `principles/visual-qa.md`.
+Read `references/principles/visual-qa.md`.
 
 ## Setup
 

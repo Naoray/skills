@@ -1,6 +1,6 @@
 # CLI Review
 
-Read `principles/visual-qa.md`.
+Read `references/principles/visual-qa.md`.
 
 ## Tool Check
 

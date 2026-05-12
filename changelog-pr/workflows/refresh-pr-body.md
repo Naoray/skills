@@ -1,6 +1,6 @@
 # Refresh PR Body
 
-Read `principles/changelog.md`.
+Read `references/principles/changelog.md`.
 
 ## Steps
 

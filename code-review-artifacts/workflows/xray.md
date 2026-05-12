@@ -1,6 +1,6 @@
 # X-Ray
 
-Read `principles/comprehension.md` and `principles/risk.md`.
+Read `references/principles/comprehension.md` and `references/principles/risk.md`.
 
 ## Purpose
 

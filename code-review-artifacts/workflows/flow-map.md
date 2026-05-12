@@ -1,6 +1,6 @@
 # Flow Map
 
-Read `principles/comprehension.md` before rendering diagrams.
+Read `references/principles/comprehension.md` before rendering diagrams.
 
 ## Steps
 
