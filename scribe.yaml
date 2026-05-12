@@ -34,3 +34,6 @@ catalog:
       description: Generate a handoff prompt for a new orchestrator session. Captures in-flight agents, active scratchpads, pending user decisions, locked design decisions, open PRs + issues, and next-wave dispatch intent. Writes output to solo scratchpad `handoff/<project>-<date>` and surfaces the prompt for the user to copy into a fresh orchestrator.
     - name: visual-review
       source: github:Naoray/skills@main
+    - name: skill-creator
+      source: github:Naoray/skills@main
+      description: Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E/P/H) gating, and progressive disclosure. LLM- and registry-agnostic; supports scribe, .claude/skills, .ai/skills, and custom backends. Mandatory reviewer pass before declaring done.
