@@ -1,0 +1,21 @@
+prompt,should_trigger,kind,notes
+"let's make a skill for refreshing my Spotify playlist every Friday — I've done this 4 times manually now",true,explicit-direct,classic create flow with prior invocation evidence
+"/skill-creator",true,explicit-slash,direct invocation
+"can you turn this workflow we just did into a reusable skill?",true,implicit-conversation,intent-from-conversation case
+"the trigger description for my evaluate-day skill keeps firing on wrong prompts — can you fix it?",true,revise,revise an existing SKILL.md
+"I keep writing the same three-step debugging dance with you. Save it as a skill.",true,implicit-pattern,user surfaces repetition; tier=P likely
+"merge the changelog-pr and update-changelog skills into one",true,merge,covered by workflows/revise.md merge branch
+"audit my registry against the skill-creator contract",true,evaluate,calls workflows/evaluate.md across all skills
+"package my skill-creator skill draft for Cursor — generate the sidecars and the PR",true,package,workflows/package.md handles sidecars + release; this is in scope
+"I want to add a new mode to my code-review-artifacts skill — security review",true,revise-add-mode,multi-mode skill revision; covered by workflows/revise.md + multi-mode-skills.md
+"the body of my changelog-pr SKILL.md is 350 lines — split it",true,revise-split,body length triggers router-pattern split; covered by workflows/revise.md
+"create a SKILL.md for that branch-naming convention we just used once",false,no-repetition,fit gate fails: ≥2 prior invocations required; suggest snippet/inline prompt
+"add evals to my existing meeting skill — it has no evals/ folder yet",false,revise-evals-only,this is a revise.md task but the request stops at evals; near-miss because skill-creator handles full revision lifecycle not eval-only patches
+"write me a snippet that formats a commit message",false,one-shot-snippet,classic disqualifier — snippet not skill
+"channel a 10x senior engineer when reviewing my code",false,persona,persona without domain model; H-tier vibes; suggest inline prompt instead
+"set up a benchmark loop to test my prompts against 50 variations",false,eval-loop,eval/benchmark is a separate kit
+"can you make my agent's responses more punchy and direct?",false,style-prompt,style/voice preference, not a workflow with artifact
+"how does the skill-creator skill work? walk me through it",false,explain-not-create,documentation request; read the skill, don't invoke creation
+"convert this PRD into an agent prompt",false,prompt-engineering,prompt engineering ≠ skill authoring; no recurring workflow
+"create a Cursor rule that warns me when I'm about to commit to main",false,cursor-rule-not-skill,near-miss: Cursor rules are tool sidecars; skill-creator covers skills not standalone tool rules. If the rule wraps a real skill use package.md instead.
+"can you skill-ify the part where you brainstorm names for my startup?",false,brainstorm-vibes,brainstorming has no stable artifact; H-tier with overreach; suggest inline prompt
