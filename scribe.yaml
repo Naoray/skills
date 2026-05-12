@@ -16,19 +16,13 @@ catalog:
       source: github:Naoray/skills@main
     - name: meeting
       source: github:Naoray/skills@main
-    - name: recap
-      source: github:Naoray/skills@main
-    - name: recap-report
-      source: github:Naoray/skills@main
     - name: dev-browser
       source: github:Naoray/skills@main
     - name: cleanup
       source: github:Naoray/skills@main
-    - name: create-changelog-pr
+    - name: changelog-pr
       source: github:Naoray/skills@main
-    - name: update-changelog
-      source: github:Naoray/skills@main
-    - name: flow-review
+    - name: code-review-artifacts
       source: github:Naoray/skills@main
     - name: research-mode
       source: github:Naoray/skills@main
@@ -39,10 +33,6 @@ catalog:
       source: github:Naoray/skills@main
       description: Generate a handoff prompt for a new orchestrator session. Captures in-flight agents, active scratchpads, pending user decisions, locked design decisions, open PRs + issues, and next-wave dispatch intent. Writes output to solo scratchpad `handoff/<project>-<date>` and surfaces the prompt for the user to copy into a fresh orchestrator.
     - name: visual-review
-      source: github:Naoray/skills@main
-    - name: visual-review-cli
-      source: github:Naoray/skills@main
-    - name: xray
       source: github:Naoray/skills@main
     - name: skill-creator
       source: github:Naoray/skills@main

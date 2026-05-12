@@ -1,6 +1,6 @@
 ---
 name: orchestrator-handoff
-description: Use when the user says "time for a handoff", "start a new orchestrator", asks to preserve session state, or context budget is tight during coordinated agent work. Inputs - current project, Solo process state, active todos/scratchpads/timers, open PRs/issues, recent git activity, and durable memory references. Do not use when the user only wants a brief status update or a daily recap; use status/recap workflows instead. Produces a read-only handoff scratchpad plus a paste-ready prompt for the next orchestrator session. Escalate if required state sources are unavailable, project identity is ambiguous, or the user wants agents stopped or repo state changed.
+description: Use when the user says "time for a handoff", "start a new orchestrator", asks to preserve session state, or context budget is tight during coordinated agent work. Inputs - current project, Solo process state, active todos/scratchpads/timers, open PRs/issues, recent git activity, and durable memory references. Do not use when the user only wants a brief status update or progress summary; answer that directly without producing a handoff artifact. Produces a read-only handoff scratchpad plus a paste-ready prompt for the next orchestrator session. Escalate if required state sources are unavailable, project identity is ambiguous, or the user wants agents stopped or repo state changed.
 ---
 
 # Orchestrator Handoff

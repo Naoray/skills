@@ -1,0 +1,15 @@
+prompt,should_trigger,kind,notes
+"create a changelog PR from staging to main",true,explicit-create,classic create-PR-body flow
+"update CHANGELOG.md with changes since the last release",true,explicit-update,canonical update-changelog-file flow
+"refresh the release PR body — there are new commits since I opened it",true,explicit-refresh,refresh-pr-body mode
+"summarize the changes between v1.2.0 and HEAD as a release note",true,implicit-summarize,creates PR body or unreleased entry from a tag range
+"generate a Keep a Changelog body for this PR",true,explicit-format,format request maps to create-pr-body
+"the release PR body is stale; rewrite it from the latest commits",true,implicit-refresh,refresh mode
+"prepare a PR description from this branch diff for the release",true,implicit-create,create-pr-body via branch diff
+"write a normal PR body for this feature branch",false,non-release-pr,non-release PRs are out of scope; use a generic PR body skill or write inline
+"run git log between staging and main",false,raw-log,raw commit list is git log not a changelog
+"cut a new release branch from main",false,release-cut,different workflow (release-cut not changelog write)
+"draft an email announcing the v2.0 release to users",false,external-comms,external communication not release notes
+"what does Keep a Changelog mean?",false,explain-not-do,documentation question; explain inline don't generate
+"add release notes to our website CMS",false,website-cms,website integration not PR/CHANGELOG.md artifact
+"what's in the [Unreleased] section of CHANGELOG.md right now?",false,read-only-query,read-only inspection not generate/update
