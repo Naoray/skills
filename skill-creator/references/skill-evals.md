@@ -7,9 +7,11 @@ Skills in this registry ship with a tracked eval contract by default. The defaul
 ```
 evals/
 ├── trigger.csv (or .json)        # 10–20 prompts: should_trigger column
-├── checks.md (or .json)          # 3–5 must-pass deterministic checks
+├── checks.md (or .json)          # inherits skill-creator C1–C15; may add 0–5 skill-specific checks
 └── rubric.schema.json (optional) # only for style/open-ended quality
 ```
+
+The canonical 15 checks (C1–C15 in `skill-creator/evals/checks.md`) cover universal contract invariants and are inherited by default. A skill MAY append 0–5 skill-specific checks (C16+) for domain-particular invariants — but only when the universal set misses something concrete and verifiable. Most skills do not need additions.
 
 ## `trigger.csv` shape
 
@@ -31,7 +33,24 @@ Rules:
 
 A markdown file listing must-pass deterministic checks. Each numbered. Each independently verifiable by an LLM or a shell script.
 
-See `evals/checks.md` in this skill for the canonical example (C1–C15).
+**Default form** (one line, inheriting the canonical 15):
+
+```markdown
+Inherits skill-creator/evals/checks.md (C1–C15).
+```
+
+**Augmented form** (one inheritance line + a "Skill-specific checks" section starting at C16):
+
+```markdown
+Inherits skill-creator/evals/checks.md (C1–C15).
+
+## Skill-specific checks
+
+C16. **<domain-particular invariant>** — concrete, deterministic, verifiable.
+C17. ...
+```
+
+Cap skill-specific checks at 5. Beyond that you are reinventing the canonical set.
 
 Optional `evals/checks.json` for machine consumption — same semantics, JSON shape.
 
@@ -46,7 +65,7 @@ Optional `evals/checks.json` for machine consumption — same semantics, JSON sh
 
 - Trigger hit rate (should-trigger fraction): **≥0.8**
 - False-positive rate (should-not-trigger that fire): **≤0.2**
-- All must-pass checks: **15/15** (or whatever count the skill declares)
+- All must-pass checks: **all checks pass** (canonical 15 plus any skill-specific additions)
 
 These thresholds are heuristic (evidence tier H). The signal that matters is direction over time: failing prompts surface real description gaps you can fix.
 

@@ -31,7 +31,7 @@ C7. **No "pushy" trigger language** in the description ("make sure to use", "alw
 
 ## Body content checks
 
-C8. **Evidence tier declared in body's first paragraph.** Must be one of `E`, `P`, or `H`. Bonus (recommended): provenance line listing `Basis`, `Source IDs`, and `Reviewed` date.
+C8. **Evidence tier + provenance declared in body's first paragraph.** Tier must be one of `E`, `P`, or `H`. Provenance line is required and must list `Basis` (the standard, framework, or expert workflow the skill is grounded in), `Source IDs` (concrete identifiers — repos, papers, internal docs), and `Reviewed` (date the tier was last audited). Why: without provenance the tier is decorative; with it, future-revisers can tell stale citations from current ones and judge whether tier upgrades or downgrades are warranted.
 
 C9. **No MUST / ALWAYS / NEVER without an accompanying WHY clause.** Each occurrence of these all-caps imperatives must have a clause explaining the reason (in the same sentence or the next one).
 
