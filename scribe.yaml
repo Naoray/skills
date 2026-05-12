@@ -28,9 +28,7 @@ catalog:
       source: github:Naoray/skills@main
     - name: cleanup
       source: github:Naoray/skills@main
-    - name: create-changelog-pr
-      source: github:Naoray/skills@main
-    - name: update-changelog
+    - name: changelog-pr
       source: github:Naoray/skills@main
     - name: code-review-artifacts
       source: github:Naoray/skills@main

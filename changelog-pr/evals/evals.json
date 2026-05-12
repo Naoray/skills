@@ -1,0 +1,15 @@
+{
+  "skill_name": "changelog-pr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a changelog PR from staging to main.",
+      "expected_output": "Selects create PR body mode, detects merge style, produces Keep a Changelog sections and a release title."
+    },
+    {
+      "id": 2,
+      "prompt": "Update CHANGELOG.md with changes since the last release.",
+      "expected_output": "Selects changelog file mode, finds last tag, proposes missing Unreleased entries, and asks before writing."
+    }
+  ]
+}
