@@ -1,95 +1,25 @@
 ---
 name: scribe-agent
-description: Use when the user wants to install, list, sync, remove, or manage AI coding-agent skills on this machine. Scribe manages a canonical skill store and links skills into Claude Code, Cursor, Codex, and other supported tools.
+description: Use when the user asks to install, list, sync, remove, adopt, explain, or manage local AI coding-agent skills with the scribe CLI. Inputs - target skill name or owner/repo:skill reference, desired operation, registry information if connecting one, and confirmation for removals or adoption. Do not use when the user wants to author a new skill, edit skill contents manually, or browse general agent capabilities; use skill-creator, direct repo edits, or discovery workflows instead. Produces deterministic scribe commands with JSON output handling and a concise result summary. Escalate if scribe is unavailable, registry state conflicts, adoption has collisions, output is non-JSON despite --json, or PR/catalog status makes installation inappropriate.
 ---
 
-# scribe-agent
+# Scribe Agent
 
-===setup-start===
-**Execute this one-shot bootstrap, then use the Edit tool to delete the entire block from `===setup-start===` through `===setup-end===` (inclusive) from this file. A setup block is one-shot — leaving it causes re-runs on every invocation.**
-
-Before running any command in this skill, check that `scribe` is installed and that this skill is registered locally. If either is missing, bootstrap them now.
-
-Step 1 - check for the binary:
-
-```bash
-scribe --version
-```
-
-If the command succeeds, skip to Step 3. If it fails with "command not found" (or similar), run Step 2.
-
-Step 2 - install scribe. Pick the first option that fits the machine; stop on the first success:
-
-```bash
-# macOS Homebrew (preferred on macOS)
-brew install Naoray/tap/scribe
-
-# macOS Apple Silicon binary
-curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_darwin_arm64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
-
-# macOS Intel binary
-curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_darwin_amd64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
-
-# Linux amd64 binary
-curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_linux_amd64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
-
-# Linux arm64 binary
-curl -L https://github.com/Naoray/scribe/releases/latest/download/scribe_linux_arm64.tar.gz | tar xz && sudo mv scribe /usr/local/bin/
-
-# Go toolchain (works anywhere Go is installed — last resort)
-go install github.com/Naoray/scribe/cmd/scribe@latest
-```
-
-**Windows (PowerShell):** Run this instead — downloads to `$env:USERPROFILE\bin` and adds it to your user PATH:
-
-```powershell
-powershell -Command "
-  \$dest = \"\$env:USERPROFILE\bin\";
-  New-Item -ItemType Directory -Force -Path \$dest | Out-Null;
-  Invoke-WebRequest -Uri 'https://github.com/Naoray/scribe/releases/latest/download/scribe_windows_amd64.zip' -OutFile \"\$env:TEMP\scribe.zip\";
-  Expand-Archive -Path \"\$env:TEMP\scribe.zip\" -DestinationPath \$dest -Force;
-  \$current = [Environment]::GetEnvironmentVariable('PATH','User');
-  if (\$current -notlike \"*\$dest*\") {
-    [Environment]::SetEnvironmentVariable('PATH', \"\$dest;\$current\", 'User')
-  }
-"
-```
-
-After running the Windows command, open a new terminal for PATH to take effect.
-
-Re-run `scribe --version` to confirm. If all options fail, stop and tell the user which one errored and why.
-
-Step 3 - make sure this skill is registered locally so it survives future sessions:
-
-```bash
-scribe list --json
-```
-
-If the output already contains an entry with `"name": "scribe-agent"`, you're done - continue with the user's actual request.
-
-If it does not, install this skill now. First trigger first-run so the `Naoray/scribe` built-in registry is wired up, then install:
-
-```bash
-scribe status --json
-scribe add Naoray/scribe:scribe-agent --yes --json
-scribe list --json
-```
-
-Confirm the final `scribe list --json` includes `scribe-agent`. If anything in this bootstrap fails, report the failing command and its stderr verbatim - do not guess around it.
-
-Once bootstrap succeeds, delete this entire block (both marker lines included) and proceed with the user's request using the command reference below.
-===setup-end===
-
-## What scribe does
+**Evidence tier**: P
+**Basis**: Practitioner workflow for Scribe CLI management of local coding-agent skills and registry-backed installs.
+**Source IDs**: Naoray/scribe CLI; scribe-agent/SKILL.md command reference; PR #7 catalog removal plan
+**Reviewed**: 2026-05-12
+**Status**: removed-from-catalog
 
 Scribe manages local coding-agent skills.
 It stores canonical copies in `~/.scribe/skills/` and links them into supported tool directories.
 Use it for installs, updates, removal, adoption of unmanaged local skills, and structured inspection.
+If `scribe` is missing, stop and tell the user to install or provide the project-approved install path before continuing.
 
 ## Trigger phrases to commands
 
-| User says | Run |
-| --- | --- |
+| Trigger | Command |
+|---------|---------|
 | search available skills | `scribe browse --json` |
 | search available skills matching X | `scribe browse --query X --json` |
 | install the X skill | `scribe browse --install X --yes --json` |
@@ -107,23 +37,20 @@ Use it for installs, updates, removal, adoption of unmanaged local skills, and s
 
 ## Non-negotiable rules
 
-1. Always use `--json` for anything you plan to parse.
+1. Use `--json` for anything you plan to parse, because styled output is not stable.
 2. Prefer `scribe browse --query ... --json` for discovery and `scribe browse --install ... --yes --json` for exact-name installs.
 3. Prefer `owner/repo:skill` for deterministic installs.
-4. Use `--yes` for direct installs and removals.
-5. Use `scribe adopt --dry-run --json` before `scribe adopt --yes --json`.
-6. Do not hand-edit `~/.scribe/state.json`.
-7. Do not copy skill files directly into tool directories; use `scribe adopt`.
+4. Use `--yes` for direct installs and removals after the user has confirmed the action.
+5. Use `scribe adopt --dry-run --json` before `scribe adopt --yes --json` so conflicts are visible first.
+6. Do not hand-edit `~/.scribe/state.json`; Scribe owns that state file.
+7. Do not copy skill files directly into tool directories; use `scribe adopt` so links and state stay consistent.
 8. `scribe sync` reconciles registries; it does not install an arbitrary new skill by query.
 9. `scribe list` is local-first. Use `scribe browse` for registry discovery.
 10. Some failures still return plain stderr plus non-zero exit, not a JSON error envelope.
 
-## JSON shapes
-
 ### `scribe list --json`
 
-Top level: array.
-Each item may include `name`, `description`, `package`, `revision`, `content_hash`, `targets`, `managed`, `origin`, and `path`.
+Each item may include `name`, `desc`, `pkg`, `revision`, `content_hash`, `targets`, `managed`, `o/`, and `path`.
 Fresh-home output is `[]`.
 
 ### `scribe browse --json`
@@ -139,28 +66,28 @@ Same envelope as `scribe browse --json`, but filtered to matching remote skills.
 ### `scribe browse --install skill --yes --json`
 
 Top level: object with `installed`.
-Each installed item may include `name`, `registry`, `status`, and `error`.
-Observed statuses: `installed`, `updated`, `already-installed`, `error`.
+Each installed item may include `name`, `registry`, `status`, and `err`.
+Observed statuses: `installed`, `updated`, `already-installed`, `err`.
 
 ### `scribe add query --json`
 
 Top level: object with `results`.
-Each result may include `name`, `registry`, `status`, `version`, `description`, and `author`.
+Each result may include `name`, `registry`, `status`, `version`, `desc`, and `author`.
 This is a legacy search/install-discovery path. Prefer `scribe browse`.
 
 ### `scribe add owner/repo:skill --yes --json`
 
 Top level: object with `installed`.
-Each installed item may include `name`, `registry`, `status`, and `error`.
-Observed statuses: `installed`, `updated`, `already-installed`, `error`.
+Each installed item may include `name`, `registry`, `status`, and `err`.
+Observed statuses: `installed`, `updated`, `already-installed`, `err`.
 
 ### `scribe sync --json`
 
 Top level: object with `registries` and `summary`.
 Each registry has `registry` and `skills`.
-Each skill result may include `name`, `action`, `status`, `version`, and `error`.
+Each skill result may include `name`, `action`, `status`, `version`, and `err`.
 `summary` has `installed`, `updated`, `skipped`, and `failed`.
-Observed actions: `installed`, `updated`, `skipped`, `error`, `package_installed`, `package_updated`, `denied`.
+Observed actions: `installed`, `updated`, `skipped`, `err`, `pkg_installed`, `pkg_updated`, `denied`.
 An optional top-level `adoption` object may appear.
 
 ### `scribe adopt --dry-run --json`
@@ -176,13 +103,13 @@ Top level: formatter envelope with `registries`, `summary`, and `adoption`.
 
 ### `scribe remove skill --yes --json`
 
-Top level: object with `removed`.
+Top level: object with `-`.
 Optional fields: `managed_by`, `errors`.
 
 ### `scribe explain skill --json`
 
 Top level: object with `name` and `content`.
-Optional fields: `description`, `revision`, `targets`, and `path`.
+Optional fields: `desc`, `revision`, `targets`, and `path`.
 This command only works for installed skills on disk.
 
 ### `scribe status --json`
@@ -190,42 +117,35 @@ This command only works for installed skills on disk.
 Top level: object with `version`, `registries`, and `installed_count`.
 Optional field: `last_sync`.
 
-## Recommended flows
+## Recipes
 
-Install a known skill:
+Install deterministically:
 
-```bash
+```sh
 scribe add owner/repo:skill --yes --json
 ```
 
-Search, then install deterministically:
+Search, then install:
 
-```bash
+```sh
 scribe browse --query query --json
 scribe browse --install owner/repo:skill --yes --json
 ```
 
-Inspect local state:
+Check status:
 
-```bash
-scribe list --json
+```sh
 scribe status --json
-```
-
-Reconcile connected registries:
-
-```bash
-scribe sync --json
 ```
 
 Adopt unmanaged local skills:
 
-```bash
+```sh
 scribe adopt --dry-run --json
 scribe adopt --yes --json
 ```
 
-## Anti-patterns
+## Avoid
 
 - Bare `scribe add` in automation.
 - Using `scribe list` when you mean "show installable remote skills".
@@ -235,12 +155,9 @@ scribe adopt --yes --json
 - Editing `~/.scribe/state.json` directly.
 - Assuming every failure returns JSON.
 
-## Fallback rule
-
 If you need a command not listed here, run:
 
-```bash
-scribe --help
+```sh
 scribe <subcommand> --help
 ```
 

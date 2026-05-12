@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"List installed scribe skills.",true,explicit,"Local scribe list"
+"Install Naoray/scribe:skill-creator with scribe.",true,explicit,"Deterministic install"
+"Search remote skills for SEO.",true,implicit,"Registry browse query"
+"Sync my scribe registries.",true,explicit,"scribe sync"
+"Adopt unmanaged local skills.",true,explicit,"Dry-run then adopt"
+"Remove the visual-review skill from scribe.",true,explicit,"Removal with confirmation"
+"Explain what the installed cleanup skill does.",true,casual,"scribe explain"
+"Create a new skill for debugging.",false,near-miss,"Skill authoring, not scribe CLI management"
+"Edit this skill's SKILL.md frontmatter.",false,near-miss,"Direct repo edit"
+"Find a skill that can audit SEO.",false,near-miss,"Discovery skill may be better unless specifically scribe"
+"Install an npm package named scribe.",false,near-miss,"Package manager task"
+"What is a medieval scribe?",false,near-miss,"Keyword-only mismatch"

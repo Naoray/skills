@@ -1,13 +1,14 @@
 ---
 name: cleanup
-description: |
-  Find and clean up stale project artifacts: implemented plans, completed specs,
-  outdated markdown docs, orphaned design files. Removes what's done, updates
-  what's drifted. Use when asked to "clean up", "remove old plans", "tidy docs",
-  "cleanup stale files", or after shipping a major feature.
+description: Use when the user asks to clean up a project, remove old plans, tidy docs, cleanup stale files, prune completed specs, or inspect artifacts after shipping a major feature. Inputs - project root, current branch context, and user confirmation before deleting or rewriting files. Do not use when the user wants disk-space cleanup, dependency pruning, code refactoring, or documentation generation; use a system-cleanup, package, refactor, or docs workflow instead. Produces a cleanup report classifying artifacts as remove, update, keep, or review, then confirmed file/doc changes. Escalate if deletion risk is ambiguous, living docs are involved, or more than two docs need substantive updates.
 ---
 
 # Project Cleanup
+
+**Evidence tier**: P
+**Basis**: Practitioner workflow for repository hygiene, stale artifact review, and conservative documentation cleanup.
+**Source IDs**: cleanup/SKILL.md workflow; git branch and markdown artifact audit conventions
+**Reviewed**: 2026-05-12
 
 Find stale plans, specs, and documentation artifacts. Remove what's been implemented, update what's drifted, and leave the project tidy.
 

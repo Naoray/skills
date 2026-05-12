@@ -1,0 +1,13 @@
+prompt,should_trigger,kind,notes
+"Enable research mode for this investigation.",true,explicit,"Mode toggle"
+"Turn on citations for every factual claim.",true,explicit,"Citation constraint"
+"Fact-check this paragraph and quote sources.",true,explicit,"Grounded verification"
+"Review this technical spec with source-backed claims only.",true,contextual,"Accuracy-critical review"
+"I need anti-hallucination mode while comparing these papers.",true,casual,"Research grounding"
+"Exit research mode now.",true,explicit,"Mode toggle off"
+"Do not guess; say I don't know if unsupported.",true,implicit,"Research constraints"
+"Brainstorm ten product names.",false,near-miss,"Creative ideation"
+"Write a fictional scene with a scholarly tone.",false,near-miss,"Creative writing, not factual grounding"
+"Summarize this local code file quickly.",false,near-miss,"Normal code summary unless citations requested"
+"Make this email sound warmer.",false,near-miss,"Editing tone"
+"Generate logo ideas for a research lab.",false,near-miss,"Keyword overlap but creative"
