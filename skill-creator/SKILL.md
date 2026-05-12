@@ -45,12 +45,12 @@ Models belong high in the stack; heuristics belong low.
 
 Read this file. Then read exactly one of:
 
-- `workflows/create.md` — new skill from a repeated workflow (full authoring loop)
-- `workflows/revise.md` — existing skill drift, fix, or merge (preserve `name` + path)
-- `workflows/evaluate.md` — run the `evals/trigger.csv` + `evals/checks.md` contract for one skill or the whole registry
-- `workflows/package.md` — sidecars, catalog wiring, sync, reviewer pass, PR
+- `workflows/create.md` — **draft** a new skill from a repeated workflow (fit gate → description → body → evals → verify). Stops at verified draft; hands off to `package.md` for release.
+- `workflows/revise.md` — **draft a revision** to an existing skill (preserve `name` + path). Stops at verified revision; hands off to `package.md` for release.
+- `workflows/evaluate.md` — run the `evals/trigger.csv` + `evals/checks.md` contract for one skill or the whole registry. Read this directly when auditing.
+- `workflows/package.md` — **release** a verified draft or revision (sidecars, catalog wiring, sync, reviewer pass, manual trigger check, commit, PR). Always runs after `create.md` or `revise.md`.
 
-Pick the one workflow that matches the user's intent. Each workflow names the references it needs.
+Pick the one workflow that matches the user's intent. The draft → release split is deliberate — it keeps procedure out of the router and out of overlapping workflows (see the anti-pattern on duplicate mode logic below).
 
 ## Cross-cutting rules (apply across all workflows)
 
@@ -74,7 +74,7 @@ If a single skill spans 3+ modes or the body crosses ~200 lines, split using the
 
 ### Cross-tool portability
 
-`SKILL.md` is tool-agnostic. Host-specific UI / paths / commands go in adjacent sidecars (`agents/openai.yaml` for Codex, `.cursor/rules/` for Cursor, `.gemini/commands/` for Gemini). Generate sidecars; do not hand-maintain. See `references/portability.md`.
+`SKILL.md` is tool-agnostic. Host-specific UI / paths / commands live in adjacent sidecars, not in the body. Generate sidecars; do not hand-maintain. See `references/portability.md` for the adapter pattern and `references/registry-integration.md` for per-backend paths.
 
 ### Lifecycle
 

@@ -1,6 +1,8 @@
-# Workflow — Create a new skill
+# Workflow — Draft a new skill
 
-Read `references/trigger-contract.md` before drafting the description. Read `references/evidence-tiers.md` before assigning a tier. Read `references/registry-integration.md` before step 7.
+This workflow drafts a skill: fit gate, description, body, bundled resources, evals. **It stops at the verified-draft stage.** Release (registry integration, sync, reviewer pass, PR) happens in `workflows/package.md`. Splitting draft from release prevents duplicate sync/reviewer logic — and the skill itself bans that duplication (see `SKILL.md` anti-patterns).
+
+Read `references/trigger-contract.md` before drafting the description. Read `references/evidence-tiers.md` before assigning a tier.
 
 ## Steps
 
@@ -16,42 +18,35 @@ Read `references/trigger-contract.md` before drafting the description. Read `ref
 
 3. **Search the registry** for collisions and overlap. See `references/registry-integration.md` for backend-specific paths. If overlap is significant, propose merging instead of creating.
 
-4. **Draft the description first** using the 5-part trigger contract (see `references/trigger-contract.md`). Refuse to proceed if any part is empty. The description IS the skill; the body is operational detail after triggering.
+4. **Draft the description first** using the 5-part trigger contract (see `references/trigger-contract.md`). Refuse to proceed if any part is empty — the description IS the skill; the body is operational detail after triggering.
 
 5. **Draft the body.** Imperative voice. Match the host's preferred style (terse, verbose — check the user's global rules). Explain WHY for every non-obvious rule. Target ≤200 lines; hard ceiling 500.
-   - If multi-mode with 3+ modes or growing past ~200 lines: split into a router `SKILL.md` + per-mode files under `workflows/`. See `references/multi-mode-skills.md` for the pattern and thresholds.
-   - The body's first paragraph MUST declare the evidence tier + provenance (Basis / Source IDs / Reviewed date).
+   - If multi-mode with 3+ modes or growing past ~200 lines: split into a router `SKILL.md` + per-mode files under `workflows/`. See `references/multi-mode-skills.md`.
+   - The body's first paragraph must declare evidence tier + provenance (Basis / Source IDs / Reviewed date) — so future-revisers can tell stale citations from current ones and judge whether a tier upgrade is warranted.
 
 6. **Decide bundled resources.** Add a script only if the same code would be rewritten ≥3 times. Add a reference only for >100-line domain content or 4+ worked examples. Add an asset only for an output template. When unsure, omit.
 
-7. **Integrate with the registry manager.** Mandatory — without this the skill is invisible to other agents. Follow the matching section in `references/registry-integration.md`. Honor `.ai/skills/` convention where applicable.
+7. **Verify mechanically against `skill-creator/evals/checks.md`.** Run C1–C15 (canonical, inherited by default). Stop at the first fail. Optionally add 0–5 skill-specific checks for domain-particular invariants and append them as C16+.
 
-8. **Create the eval contract** (default, per research: lightweight evals pay rent at 20-100 skills). See `references/skill-evals.md` and `workflows/evaluate.md`:
-   - `evals/trigger.csv` — 10–20 prompts: explicit, implicit, contextual, near-miss negatives
-   - `evals/checks.md` — 3–5 must-pass deterministic checks
-   - Optional `evals/rubric.schema.json` for style/open-ended graders
+8. **Create the eval contract.** See `references/skill-evals.md` and `workflows/evaluate.md`:
+   - `evals/trigger.csv` — 10–20 prompts: explicit, implicit, contextual, **and near-miss negatives that share keywords with the skill** (the most valuable signal).
+   - `evals/checks.md` — by default a one-line inheritance: `Inherits skill-creator/evals/checks.md (C1–C15).` Add a `## Skill-specific checks` section ONLY for domain-particular invariants beyond the canonical 15.
 
-   Skip evals only when the skill is a one-off draft you're not yet committing.
+   Skip evals only for a draft you have no intention of committing. Anything heading toward PR or registry catalog requires evals.
 
-9. **Verify.** Mechanical checks:
-   - Folder name === frontmatter `name`
-   - Frontmatter has `name` and `description` (all 5 trigger parts present)
-   - Body has no MUST/ALWAYS/NEVER without WHY
-   - Evidence tier + provenance declared in body's first paragraph
-   - No sibling `README.md` / `INSTALLATION.md` / `CHANGELOG.md` inside the folder
-   - Eval contract exists OR a written reason for skipping it
+9. **Run the trigger eval** by following `workflows/evaluate.md`. Hand-off thresholds: trigger hit rate ≥0.8, false-positive rate ≤0.2. If you fail, return to step 4 (revise the description).
 
-10. **Sync.** Run the registry manager's sync if the catalog changed.
+## Hand-off
 
-11. **Reviewer pass — mandatory before declaring done.** Ask a second agent (different model/provider when possible) or a human reviewer to audit the skill against this contract. Block on unaddressed high-priority findings. Why: author tunnel vision. Fresh context catches stale examples, hardwired assumptions, contract violations.
+When the draft passes verify + evals, **stop and hand off to `workflows/package.md`**. The package workflow runs registry integration, the sync command, the mandatory reviewer pass, the manual trigger check, the commit, and the PR.
 
-## Output
+## Output (to user)
 
-Report back to the user:
+Report back:
 - Skill path
 - Frontmatter description (the 5 parts as the agent will see them)
 - Evidence tier + provenance line
-- Fit gate score (per check)
-- Eval contract summary (number of trigger prompts, number of must-pass checks)
-- Registry integration done (which backend, sync run yes/no)
-- Reviewer pass status (who reviewed, what they flagged, what was addressed)
+- Fit gate result (per check)
+- Eval contract summary (number of trigger prompts including near-misses; whether checks are inherited or augmented)
+- Verify result (C1–C15)
+- "Ready for `workflows/package.md`" if the above all pass; otherwise the specific blockers
