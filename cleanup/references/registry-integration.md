@@ -11,6 +11,7 @@ The skill body is agent-agnostic. Concrete scan locations and prune targets vary
 | Repo-wide pattern | `**/*.plan.md`, `**/*.spec.md` |
 | Cursor | `.cursor/plans/**/*.md` (if used) |
 | Codex | `docs/plans/**/*.md` (most common) |
+| Gemini CLI | `docs/plans/**/*.md`, `plans/*.md` (Gemini has no dedicated plans dir — falls back to repo convention) |
 
 For each found file: extract checklist completion via `- [x]` / `- [ ]` counts. Treat 100% checked as "fully implemented"; <100% with recent commits as "active"; <100% with no commits in 30+ days as "abandoned".
 

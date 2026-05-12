@@ -106,6 +106,6 @@ Accumulated lessons live in [references/anti-patterns.md](references/anti-patter
 
 When the user types `/orchestrator-mode`:
 1. Acknowledge mode switch briefly.
-2. Audit in-flight subagents: `mcp__solo__list_processes` + `git log` + open PR list.
+2. Audit in-flight delegate processes: `mcp__solo__list_processes` + `git log` + open PR list.
 3. Clarify next goal if not stated.
 4. From here: default to delegation. Edit files only under the exceptions above.
