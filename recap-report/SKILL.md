@@ -1,9 +1,14 @@
 ---
 name: recap-report
-description: Use when the user asks for a weekly report, monthly summary, "what did I ship this week", "what did we work on this month", "activity report", "progress report", or wants an overview of work done over a time period. Reads persisted daily recaps and git history to synthesize a period summary.
+description: Use when the user asks for a weekly report, monthly summary, "what did I ship this week", "what did we work on this month", "activity report", or "progress report" for a date range. Inputs - project slug, requested period, persisted daily recaps, git/GitHub history, contributor attribution, and optional memory entries. Do not use when the user wants only today's state or next task; use recap instead. Produces a shareable period report with shipped work, team activity, open work, stats, insights, and a saved report file. Escalate if the date range, authorship, project identity, or source completeness is ambiguous.
 ---
 
 # Recap Report
+
+**Evidence tier**: P
+**Basis**: Practitioner-backed progress reporting, standup/status synthesis, and attribution-aware delivery summaries.
+**Source IDs**: Git/GitHub history synthesis; persisted recap frontmatter contract; MemPalace diary workflow; Naoray/skills recap-report prior art.
+**Reviewed**: 2026-05-12
 
 Generate a summary report for a time period using persisted daily recaps and git history.
 

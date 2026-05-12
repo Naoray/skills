@@ -1,9 +1,14 @@
 ---
 name: recap
-description: Use when starting a new session after time away, beginning work for the day, returning from a break, or when the user asks "what was I working on", "where did I leave off", "recap", "catch me up", "what happened yesterday", or "what did I do". Also use when the SessionStart hook indicates it is the first session of the day.
+description: Use when starting after time away, beginning the day, returning from a break, or when the user asks "what was I working on", "where did I leave off", "recap", "catch me up", or "what happened yesterday". Inputs - current repo, git status/history, GitHub PR activity, saved memories, plans/specs, and optional prior recap artifacts. Do not use when the user wants a period report across many days; use recap-report instead. Produces a concise daily project recap, persisted recap file, and prioritized next-step suggestions. Escalate if repo identity, date range, GitHub auth, or memory-source trust is unclear.
 ---
 
 # Daily Recap
+
+**Evidence tier**: P
+**Basis**: Practitioner-backed work journaling, project handoff, and standup recap workflows.
+**Source IDs**: Git/GitHub activity synthesis; MemPalace diary workflow; superpowers/gstack plan artifact workflow; Naoray/skills recap prior art.
+**Reviewed**: 2026-05-12
 
 Summarize recent project activity and identify where you left off.
 
