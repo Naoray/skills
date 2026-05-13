@@ -8,6 +8,7 @@ Four places state can live. Each has one job; don't double-write.
 | **Solo todo** | Actionable work with accept criteria. | Closed when done (with verification comment). | Orchestrator + fix agents. |
 | **MemPalace drawer** | Durable cross-session knowledge: design decisions, verbatim user directives, postmortems, lessons. | Permanent. Update in place when fact evolves. | Any future session via `mempalace_search`. |
 | **Repo `docs/`** | Shipping artefact versioned with code. | Versioned with codebase. | End users, future contributors. |
+| **North star** (`docs/NORTH_STAR.md` + MemPalace mirror) | Decision rule the orchestrator and every delegate read at dispatch time. Mission, non-goals, constraints, principles. Not a roadmap. | Persistent; refresh in place via `/north-star` refresh workflow. | Orchestrator on boot; every delegate via dispatch.md brief injection. Authoring + refresh: `north-star` skill. |
 
 ## Scratchpad naming
 

@@ -5,3 +5,4 @@ description: Multi-agent orchestration over Solo MCP — delegate parallel work,
 skills:
   - orchestrator-mode
   - orchestrator-handoff
+  - north-star
