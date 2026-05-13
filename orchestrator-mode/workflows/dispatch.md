@@ -40,10 +40,28 @@ Exceptions:
 - Pure read-only tasks (reviews, counselors) can share the main working tree.
 - Single delegated task with no parallelism — worktree preferred but not required.
 
+## North star injection
+
+Every brief below has a `## Project north star` section near the top. Populate it via the `north-star` skill's `inject(<brief>)` procedure ([../../north-star/workflows/consult.md](../../north-star/workflows/consult.md)) before send_input. Two outcomes:
+
+- **Loaded:** Paste the six sections verbatim + source SHA. Delegates use principles to break ties when scope or constraints fork mid-task.
+- **Missing:** Paste the literal "Not set for this project. Decide locally and report deviations via scratchpad for follow-up." stanza. Do NOT auto-derive from inside a delegate brief — that violates the user-approval gate.
+
+Pass the content by value, not by path — delegates may work in worktrees with their own snapshot of `docs/NORTH_STAR.md`.
+
 ## Brief template — coding delegate
 
 ```text
 <paste Reporting contract preamble — see references/reporting-contract.md>
+
+---
+
+## Project north star
+<paste output of north-star inject() — six sections verbatim, or the "Not set" stanza>
+
+When implementation choices fork, pick the path that serves the mission for
+the target users without violating non-goals or constraints. Decision
+principles break ties.
 
 ---
 
@@ -91,6 +109,11 @@ Start now with Step 0.
 
 ```text
 <paste Reporting contract preamble — see references/reporting-contract.md>
+
+---
+
+## Project north star
+<paste output of north-star inject() — six sections verbatim, or the "Not set" stanza>
 
 ---
 

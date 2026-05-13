@@ -1,6 +1,6 @@
 ---
 name: orchestrator-mode
-description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear.
+description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear. All delegation runs via Solo MCP (`mcp__solo__spawn_process`) — never via the in-process Task/Agent tool.
 ---
 
 # Orchestrator Mode
@@ -30,6 +30,7 @@ If you reach for `Task(...)`, `Agent(...)`, or `subagent_type` — STOP. Wrong t
 6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN — see [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
 7. **After every merge: cleanup the worktree.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
 8. **Every brief gets the Pattern C reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Pattern C is mandatory. Workers push terminal events; you don't poll. Pattern A timers and ScheduleWakeup fallbacks are forbidden.
+9. **Every brief gets the project north star** injected by the dispatch.md templates — agents do not derive direction, they obey it. Source: `docs/NORTH_STAR.md` (with MemPalace mirror). If missing, the boot step prompts once; never auto-derive. See the `north-star` skill.
 
 ## Decision tree
 
@@ -114,7 +115,11 @@ Accumulated lessons live in [references/anti-patterns.md](references/anti-patter
 
 When the user types `/orchestrator-mode`:
 1. Acknowledge mode switch briefly.
-2. Confirm Solo MCP is available: `mcp__solo__whoami` + `mcp__solo__list_agent_tools`. If Solo is unreachable, STOP and report — do not fall back to the in-process `Task`/`Agent` tool.
-3. Audit in-flight delegate processes: `mcp__solo__list_processes` + `git log` + open PR list.
-4. Clarify next goal if not stated.
-5. From here: default to delegation **via Solo MCP**. Edit files only under the exceptions above. The `Task`/`Agent`/`subagent_type` tools are forbidden in this mode.
+2. **Load the project north star.** Run the `north-star` skill's `consult.md` `load(<project>)` procedure — checks `docs/NORTH_STAR.md` and the MemPalace drawer in `wing=<project>`. Three outcomes:
+   - **Exists, no drift:** Acknowledge with one line — `North star loaded: <mission>. Acting autonomously per principles.` Do not re-ask the user about scope or direction; the artefact answers those.
+   - **Exists, drift:** Print the diff. Ask: "File and drawer disagree on <sections>. Reconcile via `/north-star` refresh, or pick one for this session?"
+   - **Missing:** Ask once — "No north star for this project. Derive one now via `/north-star`, skip for this session, or skip permanently?" Respect the answer; never auto-derive.
+3. Confirm Solo MCP is available: `mcp__solo__whoami` + `mcp__solo__list_agent_tools`. If Solo is unreachable, STOP and report — do not fall back to the in-process `Task`/`Agent` tool.
+4. Audit in-flight delegate processes: `mcp__solo__list_processes` + `git log` + open PR list.
+5. Clarify next goal if not stated. Skip this step when the loaded north star already disambiguates next-wave direction.
+6. From here: default to delegation **via Solo MCP**. Edit files only under the exceptions above. The `Task`/`Agent`/`subagent_type` tools are forbidden in this mode. Every delegate brief auto-injects the north star via the [workflows/dispatch.md](workflows/dispatch.md) brief templates — agents inherit the same compass.
