@@ -1,14 +1,14 @@
 ---
 name: orchestrator-mode
-description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear. All delegation runs via Solo MCP (`mcp__solo__spawn_process`) — never via the in-process Task/Agent tool.
+description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear. Delegation runs via the `solo` CLI (with MCP for `list_agent_tools` / `whoami` / `send_input`) — never via the in-process Task/Agent tool.
 ---
 
 # Orchestrator Mode
 
 **Evidence tier**: P
 **Basis**: Practitioner-backed multi-agent software coordination, code review gating, worktree isolation, and durable state hygiene.
-**Source IDs**: Solo MCP workflow conventions; Anvil worktree workflow; Naoray/skills orchestrator-mode prior art.
-**Reviewed**: 2026-05-12
+**Source IDs**: Solo CLI + MCP workflow conventions; Anvil worktree workflow; Naoray/skills orchestrator-mode prior art.
+**Reviewed**: 2026-05-15
 
 You are the coordinator. Your primary output is delegation — not file edits.
 
@@ -41,12 +41,12 @@ Add `--json` only when you need structured parsing — human-output compresses b
 | Orchestrator pid | `mcp__solo__whoami` | No CLI command. Needed for `send_input` target. |
 | Push to a process (briefs, Pattern C events) | `mcp__solo__send_input` | No CLI command. Pattern C push is non-negotiable. |
 
-Why hybrid: CLI is for chatty reads (token savings via ctx_shell compression). MCP is for the three control-plane primitives the CLI doesn't expose. Don't reach for `Task(...)`, `Agent(...)`, or `subagent_type` — wrong tool entirely. Don't reach for `mcp__solo__spawn_process` either when `solo processes spawn` works.
+Why hybrid: CLI handles chatty reads (token savings via ctx_shell compression); MCP covers the three primitives CLI doesn't expose. Prefer `solo processes spawn` over `mcp__solo__spawn_process` for the same reason.
 
 ## TL;DR — operating summary
 
 1. **Read, don't write.** Coding/refactor/test work goes to a delegate. You scope, brief, monitor, evaluate.
-2. **Default delegate = Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions only, **Cursor** for plan-review fourth voice only. **All dispatched via `solo processes spawn` CLI — never via the in-process Task/Agent tool.**
+2. **Default delegate = Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions only, **Cursor** for plan-review fourth voice only. All dispatched via `solo processes spawn` CLI.
 3. **Each coding delegate works in its own anvil worktree.** The delegate sets it up via the `anvil-agent` skill — you do not pre-create worktrees.
 4. **Feedback lives in solo todos + scratchpads + MemPalace, never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
@@ -129,8 +129,6 @@ Four places state can live — each has one job, don't double-write. Quick rule:
 ## Tooling preference
 
 Prefer `lean-ctx`/`lctx` for shell, search, read commands that match its compression rules (`git`, `rg`, `sed`, `ls`, **`solo`**). If a hook blocks a command and suggests an exact `lean-ctx -c "..."` rerun, use that rerun before falling back to plain shell. Note: lean-ctx file-read tools refuse paths outside the project root — for `~/.claude/`, `~/.scribe/`, `~/.mempalace/` etc. use native `Read` or `ctx_shell`.
-
-Run `solo` CLI through `ctx_shell` so the long list/get outputs get compressed before they land in your context. That's the whole point of preferring CLI over the equivalent `mcp__solo__*` tool for inspection calls.
 
 ## Anti-patterns
 
