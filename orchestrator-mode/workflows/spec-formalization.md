@@ -29,10 +29,10 @@ Spawn a Claude solo delegate that runs `/superpowers:writing-plans` on the brain
 Spawn ONE Claude coordinator. The coordinator owns the panel + synthesis so the orchestrator gets ONE consolidated document. Coordinator brief instructs:
 
 1. Spawn panel in parallel: Claude (deep reasoning), Codex (impl pragmatics), Gemini (dissent), Cursor (optional, high-stakes only).
-2. Brief each panelist with the [Multi-reviewer brief template](#multi-reviewer-brief-template). Each writes to `review/plan-<topic>-<agent>-r<round>`.
-3. Harvest verdicts (Pattern C — coordinator is panel's orchestrator, not the main one).
-4. Synthesize into `counselors/plan-<topic>` with sections: Per-panelist verdict / Consensus blockers (≥2 voices) / Unique insights (one voice) / Recommended next step (DISPATCH IMPL / PATCH PLAN / REJECT-AND-REWRITE) / Consensus matrix.
-5. ONE `send_input` to main orchestrator with summary + scratchpad slug. Sentinel: `COUNSELORS DONE: <verdict>`.
+2. Brief each panelist with the [Multi-reviewer brief template](#multi-reviewer-brief-template). Each writes to `review/plan-<topic>-<agent>-r<round>` via `solo scratchpads create` (CLI).
+3. Harvest verdicts (Pattern C — coordinator is panel's orchestrator, not the main one). Sub-agents push terminal events via `mcp__solo__send_input` to the coordinator's pid.
+4. Synthesize into `counselors/plan-<topic>` (`solo scratchpads create` CLI) with sections: Per-panelist verdict / Consensus blockers (≥2 voices) / Unique insights (one voice) / Recommended next step (DISPATCH IMPL / PATCH PLAN / REJECT-AND-REWRITE) / Consensus matrix.
+5. ONE `mcp__solo__send_input` (MCP — no CLI equivalent) to main orchestrator with summary + scratchpad slug. Sentinel: `COUNSELORS DONE: <verdict>`.
 
 "Counselors" = user-vocab for the panel. NOT the `/counselors` slash command.
 
@@ -71,7 +71,8 @@ Your job is to be adversarial and find what the plan misses.
 
 ## Output
 Write verdict to scratchpad `plan-<topic>-review-<your-agent-name>` via
-scratchpad_write. Print `DONE` and the scratchpad slug. Nothing else.
+`solo scratchpads create --project-id <p> --name <slug> --content <body>`
+(CLI). Print `DONE` and the scratchpad slug. Nothing else.
 
 ## Rules
 - No consensus-seeking. No hedging. State your position plainly.

@@ -1,33 +1,43 @@
 # Dispatch workflow
 
-**Transport: Solo MCP only.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — is a `mcp__solo__spawn_process` call. The Claude Code in-process `Task` / `Agent` / `subagent_type` tools are NOT a valid substitute and must never be used in orchestrator-mode. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to `mcp__solo__list_agent_tools` and spawn a real Solo process instead.
+**Transport: `solo` CLI by default, MCP for the 3 gap operations.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — is a `solo processes spawn` shell call via `ctx_shell` (compresses output), with `mcp__solo__list_agent_tools` to resolve `agent_tool_id` and `mcp__solo__send_input` to deliver briefs. The Claude Code in-process `Task` / `Agent` / `subagent_type` tools are NOT a valid substitute and must never be used in orchestrator-mode. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to `list_agent_tools` and spawn a real Solo process.
 
 For a coding task (file-modifying delegate).
 
 ```
 0. RESOLVE   mcp__solo__list_agent_tools → pick agent_tool_id for the delegate
-             family (Codex / Claude / Gemini / Cursor). NEVER hardcode IDs —
-             they're env-specific and rotate when Solo restarts. NEVER
-             substitute the Task/Agent tool here — in-process subagents share
-             the orchestrator's context, can't run in anvil worktrees, and
-             can't be Pattern-C monitored.
+             family (Codex / Claude / Gemini / Cursor). NO CLI equivalent;
+             stays MCP. NEVER hardcode IDs — they're env-specific and rotate
+             when Solo restarts. NEVER substitute the Task/Agent tool here —
+             in-process subagents share the orchestrator's context, can't run
+             in anvil worktrees, and can't be Pattern-C monitored.
 1. SCOPE     Understand task. Read spec + code. Identify file surface. Parallelisable?
-2. TODO      Solo todo with branch, parent, file surface, acceptance criteria.
-3. SPAWN     mcp__solo__spawn_process kind=agent, agent_tool_id=<resolved>,
-             name=<task-slug>
-4. BRIEF     mcp__solo__send_input with full self-contained brief (template below).
+2. TODO      solo todos create --project-id <id> --title "<t>" --body "<scope+criteria>"
+             (via ctx_shell). Include branch, parent, file surface, acceptance criteria.
+3. SPAWN     solo processes spawn --project-id <id> --kind agent \
+                 --agent-tool-id <resolved> --name <task-slug> [--json]
+             via ctx_shell. Capture the returned process id.
+4. BRIEF     mcp__solo__send_input process_id=<spawned-pid> input=<full brief>
+             (MCP — CLI cannot deliver stdin). Use template below.
 5. MONITOR   Pattern C push only. No polling timers. No ScheduleWakeup.
+             Sentinel arrives via send_input to the orchestrator's pid.
 6. REVIEW    Verify commits, run tests, review diff + PR description.
-7. CLOSE     mcp__solo__close_process. If worktree orphaned, dispatch anvil-agent
-             for cleanup (also via Solo).
+7. CLOSE     solo processes stop <pid> (via ctx_shell). If worktree orphaned,
+             dispatch anvil-agent for cleanup (also via Solo).
 ```
 
 For a slash-command delegate (read-only or stateless action), use the slash-command brief template below and skip the worktree step.
 
+## Why this split
+
+- `solo processes spawn` / `processes list` / `processes get` / `processes stop` — CLI. Output goes through lean-ctx compression in `ctx_shell`, much cheaper than the equivalent MCP tool result.
+- `solo todos *` / `solo scratchpads *` — CLI. Same reason; list/read outputs can be long.
+- `mcp__solo__list_agent_tools` / `mcp__solo__whoami` / `mcp__solo__send_input` — MCP. No CLI command exists.
+
 ## Subagent lifecycle hygiene
 
 - One agent per focused task. Don't multi-stage one PTY through unrelated phases — stale context biases reasoning.
-- After `close_process`, delete or archive the anvil worktree if the agent didn't.
+- After `solo processes stop`, delete or archive the anvil worktree if the agent didn't.
 - Never re-use the same PTY for two different deliverables.
 - Close PTYs as soon as the sentinel lands, not at the next poll.
 
@@ -98,9 +108,11 @@ gh pr create --base <PARENT_BRANCH> --title "<title>" \
 - No amending. No force-push. No skipping hooks.
 
 ## Output format
-- File follow-ups via todo_create with scope + rationale.
-- Working notes for future sessions: scratchpad_write with descriptive slug.
-- At end: print PR URL + sentinel + send_input. Nothing else.
+- File follow-ups via `solo todos create` (CLI).
+- Working notes for future sessions: `solo scratchpads create` (CLI) with
+  descriptive slug.
+- At end: print PR URL + sentinel + mcp__solo__send_input to orchestrator
+  pid. Nothing else.
 
 Start now with Step 0.
 ```
@@ -126,9 +138,9 @@ Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`,
 
 ## Output
 - Concise stdout summary.
-- Structured findings → scratchpad_write slug=`<descriptive>`. Do NOT dump
-  into the repo working tree.
-- Follow-ups → todo_create.
+- Structured findings → `solo scratchpads create --project-id <id> --name <slug> --content <text>`.
+  Do NOT dump into the repo working tree.
+- Follow-ups → `solo todos create --project-id <id> --title <t> --body <b>`.
 
 When done: print scratchpad slug (if any) + one-line verdict + sentinel.
 ```

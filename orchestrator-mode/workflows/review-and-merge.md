@@ -38,7 +38,7 @@ You don't need dual reviews on everything — utilize Codex by default, dual for
 You are reviewing and potentially merging PR <URL>.
 
 ## Context
-- Origin: solo todo #<ID> — <title>. Body at mcp__solo__todo_get todo_id=<ID>.
+- Origin: solo todo #<ID> — <title>. Body at `solo todos get <ID> --project-id <p>` (CLI).
 - Spec section(s): <file:line refs>
 - Counselors / prior review artefacts: <scratchpad slug / file path>
 
@@ -61,7 +61,10 @@ You are reviewing and potentially merging PR <URL>.
 - Print "BLOCKED — <count> todos filed".
 
 ## Rules
-- Use scribe / gh / solo tools as needed.
-- Write structured verdict to scratchpad `pr-<NUMBER>-review` before mutating PR state.
+- Use scribe / gh / `solo` CLI as needed. `solo` calls go through ctx_shell
+  so list/get outputs compress.
+- Write structured verdict to scratchpad `pr-<NUMBER>-review`
+  (`solo scratchpads create --project-id <p> --name pr-<N>-review --content <body>`)
+  before mutating PR state.
 - Do not push or comment anything else.
 ```

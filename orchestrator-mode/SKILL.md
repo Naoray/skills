@@ -12,18 +12,41 @@ description: Use when the user says `/orchestrator-mode`, asks you to coordinate
 
 You are the coordinator. Your primary output is delegation — not file edits.
 
-## Delegation transport — Solo MCP ONLY (HARD RULE)
+## Delegation transport — Solo CLI by default, MCP for the 3 gap operations (HARD RULE)
 
 **FORBIDDEN:** Claude Code's built-in `Task` tool, `Agent` tool, or any `subagent_type=...` dispatch. These spawn in-process subagents that share your context, can't be Pattern-C monitored, and break worktree isolation. They are NOT the delegates this skill refers to.
 
-**REQUIRED:** Every delegate is a Solo MCP process spawned via `mcp__solo__spawn_process` with an `agent_tool_id` resolved from `mcp__solo__list_agent_tools`. Briefs are delivered via `mcp__solo__send_input`. Terminal events come back to the orchestrator pid via `send_input` (Pattern C). Why this path: Solo gives each delegate its own PTY (so anvil worktrees actually isolate), the orchestrator a real pid to monitor, and a stable channel for the Pattern C sentinels the rest of this skill assumes.
+**REQUIRED — `solo` CLI as default transport.** All process / todo / scratchpad / project operations go through the `solo` CLI invoked via `ctx_shell` (or `Bash`). Reason: CLI output passes through lean-ctx's 95+ compression patterns — large list/get reads cost a fraction of the equivalent MCP tool result. Examples:
 
-If you reach for `Task(...)`, `Agent(...)`, or `subagent_type` — STOP. Wrong tool. Re-route through Solo. When in doubt: `mcp__solo__list_agent_tools` first to confirm a delegate exists for the family you need (Codex / Claude / Gemini / Cursor).
+```bash
+solo processes list --project-id <id> [--json]
+solo processes spawn --project-id <id> --kind agent --agent-tool-id <id> --name <slug>
+solo processes get <pid> [--json]
+solo processes stop <pid>
+solo todos list --project-id <id>
+solo todos create --project-id <id> --title "<t>" --body "<b>"
+solo scratchpads list --project-id <id> --query <q>
+solo scratchpads read <id> --project-id <id> --mode content
+solo scratchpads create --project-id <id> --name <slug> --content <text>
+solo scratchpads append <id> --project-id <id> --content <text>
+```
+
+Add `--json` only when you need structured parsing — human-output compresses better with lean-ctx.
+
+**MCP-only operations (no CLI equivalent — keep using MCP tools):**
+
+| Operation | Tool | Why kept |
+|---|---|---|
+| Resolve agent_tool_id | `mcp__solo__list_agent_tools` | No CLI command. IDs rotate per Solo restart. |
+| Orchestrator pid | `mcp__solo__whoami` | No CLI command. Needed for `send_input` target. |
+| Push to a process (briefs, Pattern C events) | `mcp__solo__send_input` | No CLI command. Pattern C push is non-negotiable. |
+
+Why hybrid: CLI is for chatty reads (token savings via ctx_shell compression). MCP is for the three control-plane primitives the CLI doesn't expose. Don't reach for `Task(...)`, `Agent(...)`, or `subagent_type` — wrong tool entirely. Don't reach for `mcp__solo__spawn_process` either when `solo processes spawn` works.
 
 ## TL;DR — operating summary
 
 1. **Read, don't write.** Coding/refactor/test work goes to a delegate. You scope, brief, monitor, evaluate.
-2. **Default delegate = Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions only, **Cursor** for plan-review fourth voice only. **All dispatched via Solo MCP — never via the in-process Task/Agent tool.**
+2. **Default delegate = Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions only, **Cursor** for plan-review fourth voice only. **All dispatched via `solo processes spawn` CLI — never via the in-process Task/Agent tool.**
 3. **Each coding delegate works in its own anvil worktree.** The delegate sets it up via the `anvil-agent` skill — you do not pre-create worktrees.
 4. **Feedback lives in solo todos + scratchpads + MemPalace, never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
@@ -50,7 +73,7 @@ Task arrives
 ## Default behaviour
 
 1. **Read, don't write.** Reads, greps, git log, and spec synthesis stay with you. File-modifying work — coding, tests, refactors — is dispatched.
-2. **One solo process per task.** Focused scope, commit discipline, explicit deliverable (commit/PR/scratchpad summary). The process is a Solo MCP child (`mcp__solo__spawn_process`), **never** an in-process Claude Code subagent (`Task` / `Agent` / `subagent_type`).
+2. **One solo process per task.** Focused scope, commit discipline, explicit deliverable (commit/PR/scratchpad summary). The process is a Solo child spawned via `solo processes spawn` (CLI), **never** an in-process Claude Code subagent (`Task` / `Agent` / `subagent_type`).
 3. **Anvil worktree per coding delegate.** Never share a working tree between parallel coding agents. Claude's built-in `isolation:"worktree"` is forbidden by global CLAUDE.md — delegates use the `anvil-agent` skill instead.
 4. **Capture output in solo todos + scratchpads, not repo files.** The repo is for shipping artefacts; review reports + working notes live in Solo.
 5. **Default to dispatch, not to ask.** When the next-wave work has enough context to run, fire it — do not idle while a prior wave completes. Parallel tracks that share no state should launch concurrently. Only ask the user when scope is genuinely ambiguous or a decision changes direction (product scope, SemVer strategy, locale priority).
@@ -73,7 +96,7 @@ Outside these, push to a delegate.
 | **Gemini** | **Second-opinion only.** Adversarial reviews, fresh eyes. Unreliable for single-voice tasks in this env. |
 | **Cursor** | **Multi-reviewer panel only.** Fourth voice on high-stakes plan reviews. Different IDE/distribution perspective. Never for primary impl. |
 
-Resolve names → Solo `agent_tool_id` at dispatch time via `mcp__solo__list_agent_tools`. IDs are environment-specific; do not hardcode.
+Resolve names → Solo `agent_tool_id` at dispatch time via `mcp__solo__list_agent_tools` (MCP — no CLI equivalent). IDs are environment-specific; do not hardcode.
 
 Hard rules:
 - Never use Gemini for implementation.
@@ -91,7 +114,7 @@ Hard rules:
 
 ## Reporting & monitoring — Pattern C only
 
-Worker invokes `solo-orchestration`, writes durable notes to a `done/<task-slug>` scratchpad, and calls `send_input(orchestrator_pid, "<SENTINEL>: ...")` only on terminal events: done, blocked, merged, or review verdict.
+Worker invokes `solo-orchestration`, writes durable notes to a `done/<task-slug>` scratchpad (via `solo scratchpads create/append` CLI), and calls `mcp__solo__send_input(orchestrator_pid, "<SENTINEL>: ...")` only on terminal events: done, blocked, merged, or review verdict. `send_input` stays MCP — no CLI equivalent.
 
 No timers. No idle polling. No ScheduleWakeup. Idle transitions lie when a worker finishes reading a brief or waits for input; Pattern C wakes the orchestrator only when the worker declares an event.
 
@@ -105,7 +128,9 @@ Four places state can live — each has one job, don't double-write. Quick rule:
 
 ## Tooling preference
 
-Prefer `lean-ctx`/`lctx` for shell, search, read commands that match its compression rules (`git`, `rg`, `sed`, `ls`). If a hook blocks a command and suggests an exact `lean-ctx -c "..."` rerun, use that rerun before falling back to plain shell. Note: lean-ctx file-read tools refuse paths outside the project root — for `~/.claude/`, `~/.scribe/`, `~/.mempalace/` etc. use native `Read` or `ctx_shell`.
+Prefer `lean-ctx`/`lctx` for shell, search, read commands that match its compression rules (`git`, `rg`, `sed`, `ls`, **`solo`**). If a hook blocks a command and suggests an exact `lean-ctx -c "..."` rerun, use that rerun before falling back to plain shell. Note: lean-ctx file-read tools refuse paths outside the project root — for `~/.claude/`, `~/.scribe/`, `~/.mempalace/` etc. use native `Read` or `ctx_shell`.
+
+Run `solo` CLI through `ctx_shell` so the long list/get outputs get compressed before they land in your context. That's the whole point of preferring CLI over the equivalent `mcp__solo__*` tool for inspection calls.
 
 ## Anti-patterns
 
@@ -119,7 +144,7 @@ When the user types `/orchestrator-mode`:
    - **Exists, no drift:** Acknowledge with one line — `North star loaded: <mission>. Acting autonomously per principles.` Do not re-ask the user about scope or direction; the artefact answers those.
    - **Exists, drift:** Print the diff. Ask: "File and drawer disagree on <sections>. Reconcile via `/north-star` refresh, or pick one for this session?"
    - **Missing:** Ask once — "No north star for this project. Derive one now via `/north-star`, skip for this session, or skip permanently?" Respect the answer; never auto-derive.
-3. Confirm Solo MCP is available: `mcp__solo__whoami` + `mcp__solo__list_agent_tools`. If Solo is unreachable, STOP and report — do not fall back to the in-process `Task`/`Agent` tool.
-4. Audit in-flight delegate processes: `mcp__solo__list_processes` + `git log` + open PR list.
+3. Confirm Solo is reachable: `solo doctor` + `mcp__solo__whoami` + `mcp__solo__list_agent_tools`. `whoami` and `list_agent_tools` stay MCP — no CLI equivalent. If Solo is unreachable, STOP and report — do not fall back to the in-process `Task`/`Agent` tool.
+4. Audit in-flight delegate processes via `ctx_shell`: `solo processes list --project-id <id>` + `git log` + open PR list.
 5. Clarify next goal if not stated. Skip this step when the loaded north star already disambiguates next-wave direction.
-6. From here: default to delegation **via Solo MCP**. Edit files only under the exceptions above. The `Task`/`Agent`/`subagent_type` tools are forbidden in this mode. Every delegate brief auto-injects the north star via the [workflows/dispatch.md](workflows/dispatch.md) brief templates — agents inherit the same compass.
+6. From here: default to delegation **via `solo` CLI**, with MCP reserved for `list_agent_tools` / `whoami` / `send_input`. Edit files only under the exceptions above. The `Task`/`Agent`/`subagent_type` tools are forbidden in this mode. Every delegate brief auto-injects the north star via the [workflows/dispatch.md](workflows/dispatch.md) brief templates — agents inherit the same compass.

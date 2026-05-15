@@ -13,7 +13,7 @@ fallbacks are forbidden.
 Invoke the `solo-orchestration` skill immediately (via the Skill tool) and
 apply Pattern C.
 
-Orchestrator pid: <FILL_FROM_mcp__solo__whoami>.
+Orchestrator pid: <FILL_FROM_mcp__solo__whoami>. (`whoami` stays MCP — no CLI equivalent.)
 
 Sentinel vocabulary (use exact tokens — terminal stdout line + send_input):
 
@@ -31,13 +31,15 @@ Sentinel vocabulary (use exact tokens — terminal stdout line + send_input):
 
 On terminal event do ALL THREE:
 1. Print sentinel as your final stdout line.
-2. scratchpad_write name=`done/<task-slug>` body=payload+notes.
+2. `solo scratchpads create --project-id <id> --name done/<task-slug> --content <payload+notes>`
+   (CLI — compresses through ctx_shell).
 3. mcp__solo__send_input process_id=<ORCH_PID> input="<SENTINEL>: <payload>.
-   Scratchpad: done/<task-slug>"
+   Scratchpad: done/<task-slug>"  (MCP — no CLI equivalent for push.)
 
-Use scratchpad_append for mid-task milestones — do NOT send_input for
-progress, only on terminal events. If you hit a blocker you can't resolve,
-print BLOCKED, file a solo todo per blocker, send_input the same line, stop.
+Use `solo scratchpads append <id> --project-id <p> --content <text>` (CLI)
+for mid-task milestones — do NOT send_input for progress, only on terminal
+events. If you hit a blocker you can't resolve, print BLOCKED, file a solo
+todo per blocker via `solo todos create`, send_input the same line, stop.
 ```
 
 ## Sub-agent cascade
