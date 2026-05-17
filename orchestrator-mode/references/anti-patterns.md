@@ -4,9 +4,9 @@ Accumulated lessons. Re-read at session start.
 
 | Anti-pattern | Fix |
 |---|---|
-| Dispatched via Claude Code's in-process `Task` / `Agent` / `subagent_type` tool instead of Solo. | Forbidden in orchestrator-mode. In-process subagents share orchestrator context, can't run in anvil worktrees, can't be Pattern-C monitored, and silently collapse parallel work. ALL delegates must be spawned via `solo processes spawn` (CLI, through ctx_shell) after resolving `agent_tool_id` from `mcp__solo__list_agent_tools` (MCP — no CLI equivalent). If Solo isn't reachable: stop and report — don't fall back. |
-| Used `mcp__solo__*` for a chatty read (list_processes, scratchpad_read, todo_list) when a `solo` CLI command exists. | Prefer CLI through `ctx_shell` — lean-ctx compresses the output. Reserve MCP for the three gap operations: `list_agent_tools`, `whoami`, `send_input`. |
-| Reached for `mcp__solo__spawn_process` / `close_process` when `solo processes spawn` / `solo processes stop` would do. | CLI is the default transport. The MCP spawn/stop tools work but skip lean-ctx compression. |
+| Dispatched via Claude Code's in-process `Task` / `Agent` / `subagent_type` tool instead of Solo. | Forbidden in orchestrator-mode. In-process subagents share orchestrator context, can't run in anvil worktrees, can't be Pattern-C monitored, and silently collapse parallel work. ALL delegates must be spawned as Solo processes: `mcp__solo__spawn_process` when inside Solo, `solo processes spawn` (CLI, through ctx_shell) when outside Solo. If Solo isn't reachable: stop and report — don't fall back. |
+| Used `solo processes spawn` from inside a Solo process. | Inside Solo, spawn via Solo MCP so child routing, parent identity, and Pattern C callbacks are preserved. Use CLI spawning only when orchestrating from outside Solo or when MCP tools are unavailable. |
+| Used `mcp__solo__*` for a chatty read (list_processes, scratchpad_read, todo_list) when a `solo` CLI command exists. | Prefer CLI through `ctx_shell` for chatty reads — lean-ctx compresses the output. Keep MCP for inside-Solo process lifecycle, `whoami`, `list_agent_tools`, and `send_input`. |
 | Idle-timer fires on already-idle process (briefing finished before work started). | Pattern C push on terminal events. No idle timers. |
 | Reviewer dispatched on a docs-only PR. | Docs-only merges directly; reviewer table guides. |
 | Single-voice plan review marked "good enough." | Multi-reviewer brief (≥2 voices). Codex catches what Claude misses and vice-versa. |
