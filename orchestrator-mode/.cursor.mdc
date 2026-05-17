@@ -1,5 +1,5 @@
 ---
-description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear. Delegates are Solo processes: spawn via Solo MCP when inside Solo, or via `solo` CLI when outside Solo.
+description: "Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, available Solo agents/processes, branch/worktree constraints, and any locked user decisions. Do not use when the user asks for a direct small edit, a normal code review, or a single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, and state hygiene rules. Escalate if scope, product direction, merge authority, destructive cleanup, or agent/tool availability is unclear. Delegates are Solo processes: spawn via Solo MCP when inside Solo, or via `solo` CLI when outside Solo."
 alwaysApply: false
 ---
 
@@ -28,7 +28,7 @@ Spawn delegates as Solo processes, never in-process `Task` / `Agent` / `subagent
 4. **Feedback lives in solo todos + scratchpads + MemPalace, never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
 6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN — see [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
-7. **After every merge: cleanup the worktree.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
+7. **After every merge: cleanup the worktree and remove the harvested Solo process.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
 8. **Every brief gets the Pattern C reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Pattern C is mandatory. Workers push terminal events; you don't poll. Pattern A timers and ScheduleWakeup fallbacks are forbidden.
 
 ## Decision tree
@@ -94,7 +94,7 @@ Worker invokes `solo-orchestration`, writes durable notes to a `done/<task-slug>
 
 No timers. No idle polling. No ScheduleWakeup. Idle transitions lie when a worker finishes reading a brief or waits for input; Pattern C wakes the orchestrator only when the worker declares an event.
 
-When a sentinel arrives: read scratchpad → verify artifact (PR/commit/verdict/todo) → close the worker immediately.
+When a sentinel arrives: read scratchpad → verify artifact (PR/commit/verdict/todo) → harvest the worker with `mcp__solo__close_process` so it is removed from Solo immediately. Do not merely pause or stop it.
 
 Full preamble (paste-into-every-brief) and sentinel vocabulary: [references/reporting-contract.md](references/reporting-contract.md).
 

@@ -1,6 +1,6 @@
 # Dispatch workflow
 
-**Transport: Solo MCP when inside Solo; `solo` CLI when outside Solo.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — creates a Solo process, never an in-process Claude Code `Task` / `Agent` / `subagent_type` delegate. If `mcp__solo__whoami` succeeds or Solo session identity is present, spawn with `mcp__solo__spawn_process`, deliver the brief with `mcp__solo__send_input`, and close with `mcp__solo__close_process`/stop equivalent. If Solo MCP tools are unavailable but `solo doctor` works, spawn with `solo processes spawn` via `ctx_shell`. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to Solo transport and spawn a real Solo process.
+**Transport: Solo MCP when inside Solo; `solo` CLI when outside Solo.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — creates a Solo process, never an in-process Claude Code `Task` / `Agent` / `subagent_type` delegate. If `mcp__solo__whoami` succeeds or Solo session identity is present, spawn with `mcp__solo__spawn_process`, deliver the brief with `mcp__solo__send_input`, and harvest with `mcp__solo__close_process`. If Solo MCP tools are unavailable but `solo doctor` works, spawn with `solo processes spawn` via `ctx_shell`. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to Solo transport and spawn a real Solo process.
 
 For a coding task (file-modifying delegate).
 
@@ -33,25 +33,29 @@ For a coding task (file-modifying delegate).
 6. MONITOR   Pattern C push only. No polling timers. No ScheduleWakeup.
              Sentinel arrives via send_input to the orchestrator's pid.
 7. REVIEW    Verify commits, run tests, review diff + PR description.
-8. CLOSE     Inside Solo: mcp__solo__close_process/stop equivalent.
-             Outside Solo: solo processes stop <pid> (via ctx_shell). If
-             worktree orphaned, dispatch anvil-agent for cleanup (also via Solo).
+8. HARVEST   After the artifact is verified, remove the Solo process. Inside
+             Solo: mcp__solo__close_process(process_id=<pid>). Outside Solo:
+             use Solo's remove/close capability if available; if the CLI only
+             exposes stop, stop is only a temporary fallback and must be
+             followed by mcp__solo__close_process when MCP is available. Never
+             leave harvested agents merely paused/stopped in Solo. If worktree
+             orphaned, dispatch anvil-agent for cleanup (also via Solo).
 ```
 
 For a slash-command delegate (read-only or stateless action), use the slash-command brief template below and skip the worktree step.
 
 ## Why this split
 
-- Inside Solo, spawn/brief/close with MCP so the delegate is a proper Solo child and Pattern C callbacks have the right parent process.
+- Inside Solo, spawn/brief/harvest with MCP so the delegate is a proper Solo child and Pattern C callbacks have the right parent process.
 - Outside Solo, spawn/list/get/stop/todo/scratchpad/project operations use the `solo` CLI through `ctx_shell`; this also keeps large read output compressed.
 - `solo todos *` / `solo scratchpads *` remain CLI-friendly even inside Solo when you are doing chatty reads; use MCP for parent/child lifecycle and push input.
 
 ## Subagent lifecycle hygiene
 
 - One agent per focused task. Don't multi-stage one PTY through unrelated phases — stale context biases reasoning.
-- After `solo processes stop`, delete or archive the anvil worktree if the agent didn't.
+- After harvesting a delegate with `mcp__solo__close_process`, delete or archive the anvil worktree if the agent didn't.
 - Never re-use the same PTY for two different deliverables.
-- Close PTYs as soon as the sentinel lands, not at the next poll.
+- Remove harvested PTYs/agents from Solo as soon as the sentinel lands and the artifact is verified, not at the next poll.
 
 ## Worktree discipline
 

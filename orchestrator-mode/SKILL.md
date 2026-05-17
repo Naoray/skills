@@ -1,6 +1,6 @@
 ---
 name: orchestrator-mode
-description: Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, Solo agents/processes, branch/worktree constraints, locked user decisions. Do not use for a direct small edit, a normal code review, or single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, state hygiene rules. Escalate on unclear scope, product direction, merge authority, destructive cleanup, or tool availability. Delegates are Solo processes: spawn via Solo MCP when inside Solo, or via `solo` CLI when outside Solo — never the in-process Task/Agent tool.
+description: "Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, Solo agents/processes, branch/worktree constraints, locked user decisions. Do not use for a direct small edit, a normal code review, or single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, state hygiene rules. Escalate on unclear scope, product direction, merge authority, destructive cleanup, or tool availability. Delegates are Solo processes: spawn via Solo MCP when inside Solo, or via `solo` CLI when outside Solo - never the in-process Task/Agent tool."
 ---
 
 # Orchestrator Mode
@@ -46,7 +46,7 @@ Add `--json` only when you need structured parsing — human-output compresses b
 | Resolve agent_tool_id | `mcp__solo__list_agent_tools` | IDs rotate per Solo restart; use MCP when available. |
 | Orchestrator pid | `mcp__solo__whoami` | Needed for Pattern C `send_input` target. |
 | Push to a process (briefs, Pattern C events) | `mcp__solo__send_input` | Pattern C push is non-negotiable. |
-| Close delegate | `mcp__solo__close_process` or stop equivalent | Keep lifecycle tied to the Solo parent when inside Solo. |
+| Harvest delegate | `mcp__solo__close_process` | Removes the stored Solo agent/terminal after its artifact is harvested. Stop/pause is not enough. |
 
 Transport check: if `mcp__solo__whoami` succeeds or Solo env/session identity is present, treat the orchestrator as inside Solo and spawn via MCP. If Solo MCP tools are unavailable but `solo doctor` works, treat the orchestrator as outside Solo and spawn via CLI. If neither path works, stop and report tool unavailability. Never fall back to the in-process `Task`/`Agent`/`subagent_type` tools.
 
@@ -58,7 +58,7 @@ Transport check: if `mcp__solo__whoami` succeeds or Solo env/session identity is
 4. **Feedback lives in solo todos + scratchpads + MemPalace, never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
 6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN — see [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
-7. **After every merge: cleanup the worktree.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
+7. **After every merge: cleanup the worktree and remove the harvested Solo process.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
 8. **Every brief gets the Pattern C reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Pattern C is mandatory. Workers push terminal events; you don't poll. Pattern A timers and ScheduleWakeup fallbacks are forbidden.
 9. **Every brief gets the project north star** injected by the dispatch.md templates — agents do not derive direction, they obey it. Source: `docs/NORTH_STAR.md` (with MemPalace mirror). If missing, the boot step prompts once; never auto-derive. See the `north-star` skill.
 
@@ -125,7 +125,7 @@ Worker invokes `solo-orchestration`, writes durable notes to a `done/<task-slug>
 
 No timers. No idle polling. No ScheduleWakeup. Idle transitions lie when a worker finishes reading a brief or waits for input; Pattern C wakes the orchestrator only when the worker declares an event.
 
-When a sentinel arrives: read scratchpad → verify artifact (PR/commit/verdict/todo) → close the worker immediately.
+When a sentinel arrives: read scratchpad → verify artifact (PR/commit/verdict/todo) → harvest the worker with `mcp__solo__close_process` so it is removed from Solo immediately. Do not merely pause or stop it.
 
 Full preamble (paste-into-every-brief) and sentinel vocabulary: [references/reporting-contract.md](references/reporting-contract.md).
 
