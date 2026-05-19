@@ -41,4 +41,14 @@ Idle-transition timers can fire when a worker is reading a brief or waiting for 
 
 If no signal arrives, assume work is still running. Status checks are manual diagnostics.
 
+## Reconciliation after blocking UI
+
+Some host UIs (e.g. Claude Code's `AskUserQuestion`) block the orchestrator's main channel while waiting for user input. Push signals arriving during that window can be lost. After any blocking-UI prompt returns, reconcile in-flight delegate state by checking:
+
+1. Durable scratchpads named `done/*` newer than your last-known check.
+2. Delegate processes whose status flipped to Stopped/Closed since last check.
+3. Tracking items flipped to completed since last check.
+
+Don't trust sentinel-absence during the modal window. Prefer plain-text questions over structured-UI prompts when delegates are mid-task. Reserve blocking UI for boot-time or between-wave decisions.
+
 For Solo-specific tool calls and preamble text, see [transports/solo/README.md](transports/solo/README.md).

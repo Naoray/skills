@@ -20,6 +20,10 @@ For a coding task (file-modifying delegate).
              (e.g. send_input) or Pull (Timers). Push avoids false-positives
              from idle transitions. Sentinel arrives via transport push or
              timer firing.
+             If you used blocking UI (e.g. `AskUserQuestion`) between dispatch
+             and harvest, reconcile state surfaces (scratchpads / process
+             status / tracking items) before assuming work is still pending —
+             push signals can be lost during the modal window.
 7. REVIEW    Verify commits, run tests, review diff + PR description.
 8. HARVEST   After the artifact is verified, harvest the delegate process
              (close/remove) via your transport. If worktree orphaned,

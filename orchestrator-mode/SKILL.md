@@ -95,6 +95,8 @@ Two primary signal strategies:
 
 Pick the strategy that fits your workflow and transport capabilities. When a sentinel arrives: read durable state → verify artifact (PR/commit/verdict) → harvest the worker process.
 
+**Reconciliation after blocking UI:** Some host UIs (e.g. Claude Code's `AskUserQuestion`) block the orchestrator's main channel while waiting for user input — push signals arriving during that window can be lost. After any blocking-UI prompt returns, reconcile in-flight delegate state via durable surfaces (scratchpads, process status, tracking items). Don't trust sentinel-absence during the modal window. Prefer plain-text questions over structured-UI prompts when delegates are mid-task. See [references/reporting-contract.md](references/reporting-contract.md) "Reconciliation after blocking UI".
+
 Full sentinel vocabulary: [references/reporting-contract.md](references/reporting-contract.md).
 
 ## State surfaces

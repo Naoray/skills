@@ -31,8 +31,10 @@ Orchestrator pid: <PID_FROM_whoami>.
 
 On terminal event (DONE/BLOCKED/MERGED):
 1. Print sentinel as final stdout line.
-2. `solo scratchpads create --name done/<task-slug> --content <payload>` (CLI).
-3. `mcp__solo__send_input process_id=<ORCH_PID> input="<SENTINEL>: <one-line summary>. Scratchpad: done/<task-slug>"` (MCP).
+2. Write durable record FIRST: `solo scratchpads create --name done/<task-slug> --content <payload>` (CLI) or `mcp__solo__scratchpad_write name=done/<task-slug>` (MCP).
+3. THEN push the sentinel: `mcp__solo__send_input process_id=<ORCH_PID> input="<SENTINEL>: <one-line summary>. Scratchpad: done/<task-slug>"` (MCP).
+
+Order is non-negotiable: `scratchpad_write` MUST happen before `send_input`. The durable record is the safety net — if the push is swallowed (e.g. by a blocking-UI modal on the orchestrator side), the scratchpad still records the terminal event for reconciliation.
 ```
 
 ## Surface Routing
