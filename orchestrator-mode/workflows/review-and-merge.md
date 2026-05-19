@@ -29,7 +29,7 @@ For code PRs, dispatch a fresh reviewer per PR with a combined brief covering co
 | Spec-heavy code PR (multi-doc reading, skill invocation, architectural synthesis) | **Claude** | Spec-reading depth + `/review`/`/qa`/`/audit` skill stack. |
 | Docs-only PR (prose `*.md`) | **None — orchestrator merges** | Don't burn a code-review voice on prose. |
 | High-stakes code PR (release-blocking, security-adjacent, multi-module refactor) | **Dual: Claude + Codex parallel** | Orthogonal blocker classes. Orchestrator synthesizes before merge. |
-| Plan formalization multi-review | **Dual: Claude + Codex** + Gemini optional adversarial 3rd; skip Cursor (0/2 reliability) | Codex catches impl pragmatics; Claude catches contract drift. Neither substitutable. |
+| Plan formalization multi-review | **Dual: Claude + Codex** + Gemini adversarial 3rd | Codex catches impl pragmatics; Claude catches contract drift; Gemini finds dissenting edge cases. |
 
 You don't need dual reviews on everything — utilize Codex by default, dual for high-stakes.
 

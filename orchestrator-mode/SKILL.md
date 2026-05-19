@@ -19,7 +19,7 @@ This skill describes the orchestrator role. Tool-specific syntax (spawn, send_in
 ## TL;DR — operating summary
 
 1. **Read, don't write.** Coding/refactor/test work goes to a delegate. You scope, brief, monitor, evaluate.
-2. **Agent selection**: **Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions only, **Cursor** for plan-review fourth voice only.
+2. **Agent selection**: **Codex** for coding, **Claude** for slash-commands & spec-heavy work, **Gemini** for adversarial second-opinions and high-stakes plan reviews.
 3. **Parallel coding delegates: one working tree each.** Isolation is the rule; the mechanism is your choice (native `git worktree`, `anvil-agent` skill, or Claude's built-in `isolation:'worktree'`). Never share a working tree between parallel coding agents.
 4. **Feedback lives in durable state surfaces (e.g. Solo todos + scratchpads), never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
@@ -65,9 +65,8 @@ Outside these, push to a delegate.
 | Agent | When to pick |
 |---|---|
 | **Codex** | Default for coding. Rust/TS/Go impl, tests, refactors, mechanical changes. |
-| **Claude** | Coding mixed with heavy spec reading / synthesis. Any task that needs a Claude Code slash command or skill (`/review`, `/qa`, `/brainstorming`, `/counselors`, `/audit`, `/plan-*-review`, `/investigate`, `/cleanup`, `/document-release`). Opus 4.7 by default. |
-| **Gemini** | **Second-opinion only.** Adversarial reviews, fresh eyes. Unreliable for single-voice tasks in this env. |
-| **Cursor** | **Multi-reviewer panel only.** Fourth voice on high-stakes plan reviews. Different IDE/distribution perspective. Never for primary impl. |
+| **Claude** | Coding mixed with heavy spec reading / synthesis. Any task that needs a Claude Code slash command or skill (`/review`, `/qa`, `/brainstorming`, `/audit`, `/plan-*-review`, `/investigate`, `/cleanup`, `/document-release`). Opus 4.7 by default. |
+| **Gemini** | **Second-opinion & Dissent.** Adversarial reviews, fresh eyes. Standard 3rd voice for high-stakes plan reviews. |
 
 Resolve specific IDs/names at dispatch time via your transport's discovery tools. Never hardcode.
 
