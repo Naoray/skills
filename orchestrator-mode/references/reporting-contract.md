@@ -1,53 +1,38 @@
 # Reporting contract (Pattern C)
 
-Every brief MUST start with this preamble. It enables Pattern C push reporting (worker calls back on terminal events; orchestrator wakes on push, not on idle false-positives).
+Every brief MUST start with a reporting preamble. It enables Pattern C push reporting (worker calls back on terminal events; orchestrator wakes on push, not on idle false-positives).
 
-## Preamble to paste into every brief
+## Role Discipline
 
-```text
-## Reporting contract (CRITICAL — do this first)
+Pattern C is the primary monitoring strategy. Timers allowed as a safety net for **external** state (CI, deploy, network polling), but never as a substitute for push when push is available.
 
-Pattern C is mandatory. Pattern A timers, Pattern B, and ScheduleWakeup
-fallbacks are forbidden.
+Worker-to-orchestrator signal:
+1. Worker identifies the orchestrator (e.g. via PID).
+2. Worker applies Pattern C via its local tooling.
+3. On terminal events (DONE/BLOCKED/MERGED), the worker pushes a signal.
 
-Invoke the `solo-orchestration` skill immediately (via the Skill tool) and
-apply Pattern C.
-
-Orchestrator pid: <FILL_FROM_mcp__solo__whoami>. (`whoami` stays MCP — no CLI equivalent.)
-
-Sentinel vocabulary (use exact tokens — terminal stdout line + send_input):
+Sentinel vocabulary (use exact tokens — terminal stdout line + push signal):
 
 | Worker kind        | Sentinel                                  |
 |--------------------|-------------------------------------------|
-| brainstorm         | BRAINSTORM DONE: <scratchpad slug>        |
-| writing-plans      | PLAN DONE: <scratchpad slug>              |
+| brainstorm         | BRAINSTORM DONE: <payload>                |
+| writing-plans      | PLAN DONE: <payload>                      |
 | plan reviewer      | REVIEW DONE: <CLEAN|NITS|BLOCKERS>        |
 | counselors panel   | COUNSELORS DONE: <verdict>                |
-| PR reviewer/merger | MERGED <sha>  OR  BLOCKED — <N> todos filed |
+| PR reviewer/merger | MERGED <sha>  OR  BLOCKED — <N> items filed |
 | impl agent         | IMPL DONE: <PR url or merge sha>          |
-| cleanup / hygiene  | CLEANUP DONE: <scratchpad slug>           |
+| cleanup / hygiene  | CLEANUP DONE: <payload>                   |
 | release engineer   | RELEASE READY: <release-url>              |
 | any worker blocked | BLOCKED: <reason>                         |
 
-On terminal event do ALL THREE:
-1. Print sentinel as your final stdout line.
-2. `solo scratchpads create --project-id <id> --name done/<task-slug> --content <payload+notes>`
-   (CLI — compresses through ctx_shell).
-3. mcp__solo__send_input process_id=<ORCH_PID> input="<SENTINEL>: <payload>.
-   Scratchpad: done/<task-slug>"  (MCP — no CLI equivalent for push.)
-
-Use `solo scratchpads append <id> --project-id <p> --content <text>` (CLI)
-for mid-task milestones — do NOT send_input for progress, only on terminal
-events. If you hit a blocker you can't resolve, print BLOCKED, file a solo
-todo per blocker via `solo todos create`, send_input the same line, stop.
-```
-
 ## Sub-agent cascade
 
-Coordinator-spawned sub-agents must use the same Pattern C contract, reporting terminal events to the coordinator (not the main orchestrator) via `send_input`. The coordinator collapses panel-level events into a single sentinel for the main orchestrator.
+Coordinator-spawned sub-agents must use the same Pattern C contract, reporting terminal events to their coordinator via transport-specific push signals. The coordinator collapses panel-level events into a single sentinel for the main orchestrator.
 
 ## Why Pattern C and not timers
 
 Idle-transition timers lie when a worker finishes reading a brief or waits for input. Pattern C wakes the orchestrator only when the worker declares a terminal event, so the wake-up always corresponds to a real artifact to inspect.
 
-If no sentinel arrives, assume work is still running. Status checks are manual diagnostics — not scheduled monitoring.
+If no signal arrives, assume work is still running. Status checks are manual diagnostics — not scheduled monitoring.
+
+For Solo-specific tool calls and preamble text, see [transports/solo.md](transports/solo.md).
