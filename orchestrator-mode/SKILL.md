@@ -14,7 +14,8 @@ You are the coordinator. Your primary output is delegation — not file edits.
 
 ## Transport
 
-This skill describes the orchestrator role. Tool-specific syntax (spawn, send_input, scratchpad, close) lives in a transport guideline (e.g. [references/transports/solo.md](references/transports/solo.md) for Solo). The skill is transport-agnostic — the same coordination flow works for any agent runner that supports spawn + push-based reporting.
+This skill describes the orchestrator role. Tool-specific syntax (spawn, push, durable state) lives in a transport guideline (e.g. [references/transports/solo/README.md](references/transports/solo/README.md) for Solo).
+ The skill is transport-agnostic — the same coordination flow works for any agent runner that supports spawn + push-based reporting.
 
 ## TL;DR — operating summary
 
@@ -25,7 +26,7 @@ This skill describes the orchestrator role. Tool-specific syntax (spawn, send_in
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
 6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN — see [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
 7. **After every merge: cleanup the worktree and remove the harvested delegate process.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
-8. **Every brief gets the Pattern C reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Prefer push (Pattern C) for worker→orchestrator wakeup. Timers allowed as a safety net for **external** state (CI, deploy, network polling), but never as a substitute for push when push is available.
+8. **Every brief gets a reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Two primary signal strategies: Push (Pattern C) and Pull (Timers). Idle-transition timers can fire on workers reading briefs or waiting for input; Push avoids that ambiguity. Pick the strategy that fits your workflow.
 9. **Every brief gets the project north star** injected by the dispatch.md templates — agents do not derive direction, they obey it. Source: `docs/NORTH_STAR.md` (with MemPalace mirror). If missing, the boot step prompts once; never auto-derive. See the `north-star` skill.
 
 ## Decision tree
@@ -84,13 +85,15 @@ Hard rules:
 | Dispatch a coding/slash-command delegate | [workflows/dispatch.md](workflows/dispatch.md) — full step sequence + brief templates |
 | Periodic & post-merge hygiene | [workflows/hygiene.md](workflows/hygiene.md) — worktree purge, `/cleanup`, `/document-release` |
 
-## Reporting & monitoring — Pattern C preferred
+## Reporting & monitoring
 
-Workers push terminal-event signals to the orchestrator only when they finish or block. State reporting contract generally involves the worker writing a durable note and pushing a sentinel to the orchestrator. See [references/reporting-contract.md](references/reporting-contract.md) for the role discipline and [references/transports/solo.md](references/transports/solo.md) for Solo-specific tool calls.
+Workers push terminal-event signals to the orchestrator only when they finish or block. State reporting contract generally involves the worker writing a durable note and pushing a sentinel to the orchestrator. See [references/reporting-contract.md](references/reporting-contract.md) for the role discipline and [references/transports/solo/README.md](references/transports/solo/README.md) for Solo-specific tool calls.
 
-Prefer push (Pattern C) for worker→orchestrator wakeup. Timers allowed as a safety net for **external** state (CI, deploy, network polling). Never use timers as a substitute for push when push is available.
+Two primary signal strategies:
+- **Push (Pattern C)**: Worker calls back on terminal events. Avoids false-positives from idle transitions.
+- **Pull (Timers)**: Orchestrator watches for idle state. Can fire prematurely if a worker is reading a brief or waiting for input.
 
-When a sentinel arrives: read durable state → verify artifact (PR/commit/verdict) → harvest the worker process.
+Pick the strategy that fits your workflow and transport capabilities. When a sentinel arrives: read durable state → verify artifact (PR/commit/verdict) → harvest the worker process.
 
 Full sentinel vocabulary: [references/reporting-contract.md](references/reporting-contract.md).
 

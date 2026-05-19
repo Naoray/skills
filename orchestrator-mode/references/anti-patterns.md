@@ -5,7 +5,6 @@ Accumulated lessons. Re-read at session start.
 | Anti-pattern | Fix |
 |---|---|
 | Dispatched code-modifying work via built-in in-process subagents. | In-process subagents (Claude Code `Task` / `Agent`) share orchestrator context and can't be easily isolated. Use them for **read-only research** only. Code-modifying delegates MUST be dispatched out-of-process via your transport. |
-| Used timers as a substitute for push reporting. | Prefer push (Pattern C) on terminal events. Idle-transition timers lie when a worker finishes reading a brief or waits for input. |
 | Harvested an agent by pausing/stopping it without closing/removing the process. | After terminal sentinel + artifact verification, remove the stored process entry via your transport. Stop/pause is only a temporary fallback. |
 | Reviewer dispatched on a docs-only PR. | Docs-only merges directly; reviewer table guides. |
 | Single-voice plan review marked "good enough." | Multi-reviewer brief (≥2 voices). Codex catches what Claude misses and vice-versa. |

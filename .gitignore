@@ -1,0 +1,5 @@
+.agents/
+.claude/
+.codex/
+.scribe.yaml
+.DS_Store

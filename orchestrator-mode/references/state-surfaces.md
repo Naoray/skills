@@ -33,5 +33,5 @@ No date suffixes — `updated_at` already records time; dates rot when workflows
 - Session start → prune anything from closed workflows.
 - Re-review of same identifier → keep both with suffix (`-first-pass`, `-rereview`).
 
-For Solo-specific mapping and tool calls, see [transports/solo.md](transports/solo.md).
+For Solo-specific mapping and tool calls, see [transports/solo/README.md](transports/solo/README.md).
 

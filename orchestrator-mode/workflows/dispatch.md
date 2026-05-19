@@ -1,6 +1,6 @@
 # Dispatch workflow
 
-**Transport: Reference your transport guideline (e.g. [../references/transports/solo.md](../references/transports/solo.md)) for specific tool syntax.**
+**Transport: Reference your transport guideline (e.g. [../references/transports/solo/README.md](../references/transports/solo/README.md)) for specific tool syntax.**
 
 This skill coordinates out-of-process delegates. Built-in in-process subagents (Claude Code `Task` / `Agent`) are allowed for **read-only research** that doesn't need isolation. Never use them for code-modifying delegates — those need their own worktree and must be dispatched out-of-process via your chosen transport.
 
@@ -16,8 +16,10 @@ For a coding task (file-modifying delegate).
 5. BRIEF     Deliver the full brief (see template below). If the transport
              returns bootstrap instructions (e.g. Solo's agent_instructions),
              prepend them to the first input.
-6. MONITOR   Pattern C push preferred. Timers allowed as safety net for external
-             state only. Sentinel arrives via transport push (e.g. send_input).
+6. MONITOR   Choose a signal strategy: Push (Pattern C) via your transport
+             (e.g. send_input) or Pull (Timers). Push avoids false-positives
+             from idle transitions. Sentinel arrives via transport push or
+             timer firing.
 7. REVIEW    Verify commits, run tests, review diff + PR description.
 8. HARVEST   After the artifact is verified, harvest the delegate process
              (close/remove) via your transport. If worktree orphaned,
