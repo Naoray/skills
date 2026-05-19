@@ -9,7 +9,6 @@ The skill body is agent-agnostic. Concrete scan locations and prune targets vary
 | Claude Code + superpowers | `.superpowers/**/*.md`, `docs/superpowers/**/*.md` |
 | Project-root convention | `PLAN.md`, `SPEC.md`, `DESIGN.md`, `TODO.md` |
 | Repo-wide pattern | `**/*.plan.md`, `**/*.spec.md` |
-| Cursor | `.cursor/plans/**/*.md` (if used) |
 | Codex | `docs/plans/**/*.md` (most common) |
 | Gemini CLI | `docs/plans/**/*.md`, `plans/*.md` (Gemini has no dedicated plans dir — falls back to repo convention) |
 
@@ -20,7 +19,6 @@ For each found file: extract checklist completion via `- [x]` / `- [ ]` counts. 
 | Backend | Path |
 |---|---|
 | Claude Code | `.claude/rules/*.md`, `CLAUDE.md` |
-| Cursor | `.cursor/rules/*.md`, `.cursorrules` |
 | Codex / open-source agents | `AGENTS.md`, `.aiderules`, `.aider.conf.yml` |
 | Gemini CLI | `GEMINI.md` |
 

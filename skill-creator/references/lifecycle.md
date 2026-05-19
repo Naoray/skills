@@ -54,7 +54,7 @@ A registry without a lifecycle drifts. Skills accumulate. Duplicates appear. Out
 
 - **Per-skill review**: every time the skill is revised (`workflows/revise.md` triggers it).
 - **Registry sweep**: quarterly, OR after any major model/tooling shift (new agent host, new tool integration, breaking change to a key dependency).
-- **Major-shift example**: when Claude Code, Codex, Cursor, or Gemini ship a breaking change to skill loading, run a full sweep against `evals/checks.md`.
+- **Major-shift example**: when Claude Code, Codex, or Gemini ship a breaking change to skill loading, run a full sweep against `evals/checks.md`.
 
 ## What changes between states (in files)
 

@@ -10,7 +10,6 @@ A skill is a directory containing `SKILL.md` (+ optional bundled resources). Whe
 - [Scribe (multi-tool, multi-machine)](#scribe-multi-tool-multi-machine)
 - [Codex (OpenAI)](#codex-openai)
 - [Gemini (Google)](#gemini-google)
-- [Cursor](#cursor)
 - [Pick-your-backend checklist](#pick-your-backend-checklist)
 - [Collision check before creating](#collision-check-before-creating)
 - [Validation after edits](#validation-after-edits)
@@ -33,7 +32,7 @@ Used by: Claude Code, anywhere.
 
 After creating: nothing to sync. Auto-discovered.
 
-Limitation: only Claude Code; not propagated to Cursor, Codex, or Gemini unless you also place the same folder in their respective skill directories.
+Limitation: only Claude Code; not propagated to Codex or Gemini unless you also place the same folder in their respective skill directories.
 
 ## Laravel Boost
 
@@ -82,7 +81,7 @@ After editing `scribe.yaml`, run:
 scribe sync
 ```
 
-This links the canonical skill into every tool registered with scribe (Claude Code, Cursor, Codex, Gemini). Without sync, the skill exists locally but is invisible to those agents.
+This links the canonical skill into every tool registered with scribe (Claude Code, Codex, Gemini). Without sync, the skill exists locally but is invisible to those agents.
 
 Skip `scribe sync` only when iterating drafts you don't yet want shipped. Note the skip explicitly in the commit message.
 
@@ -108,12 +107,6 @@ Path: `~/.gemini/skills/<skill-name>/` (or `<project>/.gemini/skills/<skill-name
 If the same skill name exists in multiple locations, Gemini emits a "Skill conflict detected" warning at startup and uses one as the override. Avoid duplicating skill names across `~/.agents/skills/`, `~/.gemini/skills/`, and project-local copies.
 
 After creating: relaunch Gemini for the skill to register.
-
-## Cursor
-
-Path: `<project>/.cursor/skills/<skill-name>/` (project-local) or whatever the Cursor docs specify for global skills.
-
-Cursor reads skills similarly to Claude Code; behavior is broadly compatible.
 
 ## Pick-your-backend checklist
 

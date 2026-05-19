@@ -114,8 +114,7 @@ You are running <SLASH_COMMAND> on <TARGET>. Read-only dispatch — do not
 create worktrees or branches.
 
 ## Task
-Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`,
-`/counselors --group smart`, `/brainstorming <topic>`.
+Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`, `/brainstorming <topic>`.
 
 ## Output
 - Concise stdout summary.

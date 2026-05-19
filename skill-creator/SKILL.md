@@ -100,7 +100,7 @@ Skills move through active → merge candidate → archived. Run a registry swee
 - `references/multi-mode-skills.md` — router pattern, thresholds, anti-patterns
 - `references/skill-evals.md` — `trigger.csv` + `checks.md` format, pass thresholds, what NOT to build
 - `references/lifecycle.md` — active / merge candidate / archived states + cadence
-- `references/portability.md` — sidecar adapter pattern (Codex / Cursor / Gemini)
+- `references/portability.md` — sidecar adapter pattern (Codex / Gemini)
 - `references/registry-integration.md` — per-backend integration steps
 - `assets/SKILL_TEMPLATE.md` — scaffold for non-router skills
 - `assets/ROUTER_TEMPLATE.md` — scaffold for router skills with workflows/
