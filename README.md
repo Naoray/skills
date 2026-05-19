@@ -1,6 +1,7 @@
 # Naoray/skills
 
-**15 production-grade skills for Claude Code, Cursor, and Codex.** Each one earned its slot against a deterministic 15-check audit, ships with router/structure evals, and declares its evidence tier upfront — so you know whether it's empirical, practitioner-backed, or heuristic before you install.
+**15 production-grade skills for Claude Code, Codex, and Gemini.**
+ Each one earned its slot against a deterministic 15-check audit, ships with router/structure evals, and declares its evidence tier upfront — so you know whether it's empirical, practitioner-backed, or heuristic before you install.
 
 Install one. Install the catalog. Built for [Scribe](https://github.com/Naoray/scribe), works without it.
 
@@ -54,7 +55,7 @@ Then `scribe sync`. Kits stack; add or remove individual skills on top with `add
 
 ### Multi-agent orchestration (kit: `orchestration`)
 
-- **`orchestrator-mode`** — Convert the current session into a delegating coordinator over [Solo MCP](https://github.com/sublayerapp/solo). Sets agent-selection rules (codex for coding, claude for skills/slash-commands, gemini for second-opinion), worktree-by-default isolation, and scratchpad-based feedback capture.
+- **`orchestrator-mode`** — Convert the current session into a delegating coordinator over [Solo MCP](https://github.com/sublayerapp/solo). Sets agent-selection rules (codex for coding, claude for skills/slash-commands, gemini for second-opinion & dissent), worktree-by-default isolation, and scratchpad-based feedback capture.
 - **`orchestrator-handoff`** — A paste-ready prompt for the next orchestrator session. Captures in-flight agents, scratchpads, locked decisions, open PRs, and dispatch intent so the next window starts hot.
 
 ### Methodology (kit: `methodology`)
@@ -111,7 +112,7 @@ scribe browse
 scribe add Naoray/skills:<skill-name>
 ```
 
-Scribe keeps the canonical copy in `~/.scribe/skills/` and links it into Claude Code, Cursor, Codex, and Gemini.
+Scribe keeps the canonical copy in `~/.scribe/skills/` and links it into Claude Code, Codex, and Gemini.
 
 Want all 15 skills at once?
 
@@ -123,7 +124,7 @@ Installs every catalog entry from connected registries in one shot.
 
 ### Let your AI set it up
 
-Paste this into Claude Code, Cursor, Codex, or any agentic LLM — works whether scribe is installed or not:
+Paste this into Claude Code, Codex, or any agentic LLM — works whether scribe is installed or not:
 
 ```
 Help me set up the Naoray/skills registry (https://github.com/Naoray/skills) for my AI coding tools.

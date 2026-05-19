@@ -1,84 +1,57 @@
 # Dispatch workflow
 
-**Transport: Solo MCP when inside Solo; `solo` CLI when outside Solo.** Every dispatch in this skill — coding, slash-command, reviewer, counselor, brainstorm, cleanup — creates a Solo process, never an in-process Claude Code `Task` / `Agent` / `subagent_type` delegate. If `mcp__solo__whoami` succeeds or Solo session identity is present, spawn with `mcp__solo__spawn_process`, deliver the brief with `mcp__solo__send_input`, and harvest with `mcp__solo__close_process`. If Solo MCP tools are unavailable but `solo doctor` works, spawn with `solo processes spawn` via `ctx_shell`. If you find yourself about to call `Task(...)` to "dispatch a subagent", you are off-skill — go back to Solo transport and spawn a real Solo process.
+**Transport: Reference your transport guideline (e.g. [../references/transports/solo/README.md](../references/transports/solo/README.md)) for specific tool syntax.**
+
+This skill coordinates out-of-process delegates. Built-in in-process subagents (Claude Code `Task` / `Agent`) are allowed for **read-only research** that doesn't need isolation. Never use them for code-modifying delegates — those need their own worktree and must be dispatched out-of-process via your chosen transport.
 
 For a coding task (file-modifying delegate).
 
 ```
-0. TRANSPORT Determine whether this orchestrator is inside Solo:
-             - inside Solo: mcp__solo__whoami succeeds / Solo session identity exists
-             - outside Solo: MCP unavailable, but `solo doctor` works
-             If neither path works, stop and report. NEVER substitute the
-             Task/Agent tool here — in-process subagents share the
-             orchestrator's context, can't run in anvil worktrees, and can't
-             be Pattern-C monitored.
-1. RESOLVE   Inside Solo: mcp__solo__list_agent_tools → pick agent_tool_id.
-             Outside Solo: resolve the equivalent agent tool id from Solo
-             CLI/status surfaces available in that environment. NEVER hardcode
-             IDs — they're env-specific and rotate when Solo restarts.
+0. TRANSPORT Identify the transport (e.g. Solo) and verify connectivity.
+1. RESOLVE   Resolve the target agent tool id via your transport's discovery.
+             NEVER hardcode IDs — they're env-specific.
 2. SCOPE     Understand task. Read spec + code. Identify file surface. Parallelisable?
-3. TODO      solo todos create --project-id <id> --title "<t>" --body "<scope+criteria>"
-             (via ctx_shell). Include branch, parent, file surface, acceptance criteria.
-4. SPAWN     Inside Solo:
-               mcp__solo__spawn_process(project_id=<id>, kind=agent,
-                 agent_tool_id=<resolved>, name=<task-slug>)
-             Outside Solo:
-               solo processes spawn --project-id <id> --kind agent \
-                 --agent-tool-id <resolved> --name <task-slug> \
-                 --arg "<full brief>" [--json]
-               via ctx_shell. Capture the returned process id.
-5. BRIEF     Inside Solo: mcp__solo__send_input process_id=<spawned-pid>
-             input=<full brief>. Outside Solo: the brief travels as the
-             initial CLI `--arg` at spawn time. Use template below.
-6. MONITOR   Pattern C push only. No polling timers. No ScheduleWakeup.
-             Sentinel arrives via send_input to the orchestrator's pid.
+3. TRACK     Create a tracking item (e.g. Solo todo) with scope and criteria.
+4. SPAWN     Spawn the delegate process via your transport.
+5. BRIEF     Deliver the full brief (see template below). If the transport
+             returns bootstrap instructions (e.g. Solo's agent_instructions),
+             prepend them to the first input.
+6. MONITOR   Choose a signal strategy: Push (Pattern C) via your transport
+             (e.g. send_input) or Pull (Timers). Push avoids false-positives
+             from idle transitions. Sentinel arrives via transport push or
+             timer firing.
+             If you used blocking UI (e.g. `AskUserQuestion`) between dispatch
+             and harvest, reconcile state surfaces (scratchpads / process
+             status / tracking items) before assuming work is still pending —
+             push signals can be lost during the modal window.
 7. REVIEW    Verify commits, run tests, review diff + PR description.
-8. HARVEST   After the artifact is verified, remove the Solo process. Inside
-             Solo: mcp__solo__close_process(process_id=<pid>). Outside Solo:
-             use Solo's remove/close capability if available; if the CLI only
-             exposes stop, stop is only a temporary fallback and must be
-             followed by mcp__solo__close_process when MCP is available. Never
-             leave harvested agents merely paused/stopped in Solo. If worktree
-             orphaned, dispatch anvil-agent for cleanup (also via Solo).
+8. HARVEST   After the artifact is verified, harvest the delegate process
+             (close/remove) via your transport. If worktree orphaned,
+             dispatch cleanup.
 ```
 
 For a slash-command delegate (read-only or stateless action), use the slash-command brief template below and skip the worktree step.
 
-## Why this split
-
-- Inside Solo, spawn/brief/harvest with MCP so the delegate is a proper Solo child and Pattern C callbacks have the right parent process.
-- Outside Solo, spawn/list/get/stop/todo/scratchpad/project operations use the `solo` CLI through `ctx_shell`; this also keeps large read output compressed.
-- `solo todos *` / `solo scratchpads *` remain CLI-friendly even inside Solo when you are doing chatty reads; use MCP for parent/child lifecycle and push input.
-
 ## Subagent lifecycle hygiene
 
 - One agent per focused task. Don't multi-stage one PTY through unrelated phases — stale context biases reasoning.
-- After harvesting a delegate with `mcp__solo__close_process`, delete or archive the anvil worktree if the agent didn't.
+- After harvesting a delegate, delete or archive the workspace isolation (e.g. worktree) if the agent didn't.
 - Never re-use the same PTY for two different deliverables.
-- Remove harvested PTYs/agents from Solo as soon as the sentinel lands and the artifact is verified, not at the next poll.
+- Remove harvested processes from your transport as soon as the sentinel lands and the artifact is verified.
 
-## Worktree discipline
+## Workspace isolation
 
-- Per global CLAUDE.md: always use `anvil`, never Claude's built-in `isolation:"worktree"`.
-- The agent owns its workspace setup. Orchestrator does not pre-run anvil for the delegate — Step 0 in the brief tells the delegate to invoke `anvil-agent`.
-
-Exceptions:
-- Pure read-only tasks (reviews, counselors) can share the main working tree.
-- Single delegated task with no parallelism — worktree preferred but not required.
+- Isolation is the rule. Never share a working tree between parallel coding agents.
+- The agent owns its workspace setup. Orchestrator does not pre-create worktrees for the delegate — Step 0 in the brief tells the delegate to set up its isolation.
 
 ## North star injection
 
-Every brief below has a `## Project north star` section near the top. Populate it via the `north-star` skill's `inject(<brief>)` procedure ([../../north-star/workflows/consult.md](../../north-star/workflows/consult.md)) before send_input. Two outcomes:
-
-- **Loaded:** Paste the six sections verbatim + source SHA. Delegates use principles to break ties when scope or constraints fork mid-task.
-- **Missing:** Paste the literal "Not set for this project. Decide locally and report deviations via scratchpad for follow-up." stanza. Do NOT auto-derive from inside a delegate brief — that violates the user-approval gate.
-
-Pass the content by value, not by path — delegates may work in worktrees with their own snapshot of `docs/NORTH_STAR.md`.
+Every brief below has a `## Project north star` section near the top. Populate it via the `north-star` skill's `inject(<brief>)` procedure before dispatch.
 
 ## Brief template — coding delegate
 
 ```text
-<paste Reporting contract preamble — see references/reporting-contract.md>
+<paste Reporting contract preamble from your transport guideline>
 
 ---
 
@@ -92,16 +65,16 @@ principles break ties.
 ---
 
 You are the <TOPIC> implementation worker for <PROJECT>. Work in an
-anvil-managed worktree branched off `<PARENT_BRANCH>`, finish with a PR.
+isolated workspace (e.g. anvil worktree) branched off `<PARENT_BRANCH>`,
+finish with a PR.
 
 ## Step 0 — Workspace
-1. Invoke the `anvil-agent` skill, follow its workflow for an isolated
-   worktree on branch `agent-<topic-slug>` from `<PARENT_BRANCH>`.
-2. cd into the returned worktree path. ALL edits happen there.
+1. Set up an isolated workspace on branch `agent-<topic-slug>` from `<PARENT_BRANCH>`.
+2. ALL edits happen there.
 3. git status + git branch --show-current to confirm.
 
 ## Scope
-<Pull from solo todo. Include file paths, acceptance criteria, spec section.>
+<Pull from tracking item. Include file paths, acceptance criteria, spec section.>
 
 ## Deliverables (one commit per phase, [agent] prefix)
 
@@ -117,18 +90,16 @@ gh pr create --base <PARENT_BRANCH> --title "<title>" \
   --body "<summary + test plan>"
 
 ## Rules
-- Anvil-managed worktree only. Never edit main repo working tree.
+- Isolated workspace only. Never edit main repo working tree.
 - [agent] prefix on every commit.
 - Run tests before every commit; iterate until green.
 - Stage specific files by name; never `git add -A`.
 - No amending. No force-push. No skipping hooks.
 
 ## Output format
-- File follow-ups via `solo todos create` (CLI).
-- Working notes for future sessions: `solo scratchpads create` (CLI) with
-  descriptive slug.
-- At end: print PR URL + sentinel + mcp__solo__send_input to orchestrator
-  pid. Nothing else.
+- File follow-ups via your transport's tracking tool (e.g. Solo todos).
+- Working notes for future sessions: your transport's durable surface (e.g. Solo scratchpads).
+- At end: print PR URL + sentinel + push signal to orchestrator. Nothing else.
 
 Start now with Step 0.
 ```
@@ -136,7 +107,7 @@ Start now with Step 0.
 ## Brief template — slash-command delegate
 
 ```text
-<paste Reporting contract preamble — see references/reporting-contract.md>
+<paste Reporting contract preamble from your transport guideline>
 
 ---
 
@@ -149,14 +120,12 @@ You are running <SLASH_COMMAND> on <TARGET>. Read-only dispatch — do not
 create worktrees or branches.
 
 ## Task
-Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`,
-`/counselors --group smart`, `/brainstorming <topic>`.
+Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`, `/brainstorming <topic>`.
 
 ## Output
 - Concise stdout summary.
-- Structured findings → `solo scratchpads create --project-id <id> --name <slug> --content <text>`.
-  Do NOT dump into the repo working tree.
-- Follow-ups → `solo todos create --project-id <id> --title <t> --body <b>`.
+- Structured findings → your transport's durable surface (e.g. Solo scratchpads).
+- Follow-ups → your transport's tracking tool (e.g. Solo todos).
 
-When done: print scratchpad slug (if any) + one-line verdict + sentinel.
+When done: print payload/slug (if any) + one-line verdict + sentinel.
 ```

@@ -33,7 +33,7 @@ Status rubric:
 - `README.md` (root + subdirs) — flag sections referencing files/directories/features that no longer exist.
 - `ARCHITECTURE.md`, `CONTRIBUTING.md`, `CHANGELOG.md` — check against current state.
 - Any `docs/**/*.md` (excluding plans/specs covered by Pass A).
-- Tool-rules files (e.g. `.claude/rules/*.md`, `.cursor/rules/*.md`, `AGENTS.md`) — flag if they reference frameworks/tools not in current dependencies.
+- Tool-rules files (e.g. `.claude/rules/*.md`, `AGENTS.md`, `GEMINI.md`) — flag if they reference frameworks/tools not in current dependencies.
 
 For each file note: last modified date (from `git log`); whether it references files/functions/routes that still exist; whether it contradicts the current codebase.
 
@@ -72,7 +72,7 @@ Files where the right action isn't clear.
 
 Present the report and ask before any destructive action. Why: deletion is irreversible and classification can be wrong.
 
-Use whatever interactive prompt your runtime supports (e.g. Claude Code's structured `AskUserQuestion`, Cursor's inline confirm, Codex's `read -p`, or plain stdin). Either way, default to inaction until the user says go.
+Use whatever interactive prompt your runtime supports (e.g. Claude Code's structured `AskUserQuestion`, Codex's `read -p`, or plain stdin). Either way, default to inaction until the user says go.
 
 Suggested phrasing:
 

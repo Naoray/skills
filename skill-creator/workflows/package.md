@@ -9,7 +9,6 @@ This workflow runs after `workflows/create.md` (or `workflows/revise.md`) has pr
 1. **Generate machine-facing sidecars** for any host that needs them, per `references/portability.md`:
    - **Codex**: `agents/openai.yaml` with `display_name`, `short_description`, `default_prompt`. Generate from `SKILL.md` content — do not hand-maintain.
    - **Gemini**: optional `.gemini/commands/<name>.toml` adapter if the skill should be invocable as a slash command in Gemini CLI.
-   - **Cursor**: `.cursor/rules/<name>.mdc` if the skill should be a Cursor rule.
 
    Skip sidecars the user doesn't actively use.
 

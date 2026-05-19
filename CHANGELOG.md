@@ -34,7 +34,7 @@ First tagged release. The registry now ships 15 skills bundled into 5 kits, ever
 - **README** rewritten with kits as the primary install path; theme→kit mapping in section headings; direct-response polish on the opener.
 - **`orchestrator-mode`** body split from 492 lines to a 111-line router plus four workflows (`spec-formalization`, `review-and-merge`, `dispatch`, `hygiene`) and three references (`reporting-contract`, `state-surfaces`, `anti-patterns`).
 - **`plan-my-day`, `session-plan`, `meeting`** bodies now use backend variables (`<context-root>`, `<meetings-root>`) instead of hardcoded `~/Context/` paths. Defaults documented in per-skill `references/paths.md`.
-- **`cleanup`** body is agent-agnostic — Claude-specific terms (`subagents`, `AskUserQuestion`, `.claude/recaps/`, `.superpowers/`) moved into `references/registry-integration.md` with a multi-backend table covering Claude Code, Cursor, Codex, Gemini.
+- **`cleanup`** body is agent-agnostic — Claude-specific terms (`subagents`, `AskUserQuestion`, `.claude/recaps/`, `.superpowers/`) moved into `references/registry-integration.md` with a multi-backend table covering Claude Code, Codex, Gemini.
 - **`code-review-artifacts`** consolidates the former `flow-review` and `xray` skills.
 - **`visual-review`** covers both browser UI and CLI/TUI review (formerly two separate skills).
 - **`changelog-pr`** covers release PR bodies and `CHANGELOG.md` updates (formerly two separate skills).

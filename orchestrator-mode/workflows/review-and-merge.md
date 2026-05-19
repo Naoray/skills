@@ -10,11 +10,12 @@ For code PRs, dispatch a fresh reviewer per PR with a combined brief covering co
                       b) Plan-conformance (diff PR scope vs originating todo/spec)
                       Verdict:
                         CLEAN    → merges (rebase for feature-target, squash for main)
-                                   deletes remote branch, closes worktree
-                        NITS     → merges + files follow-up todos
-                        BLOCKERS → does NOT merge; files solo todos + PR review comment
-2. EVALUATE FEEDBACK  Orchestrator reads reviewer summary. For BLOCKERS:
-                      dispatch fix agent on new anvil worktree → cycle to step 1.
+                                                           deletes remote branch, closes workspace
+                                                NITS     → merges + files follow-up tracking items
+                                                BLOCKERS → does NOT merge; files tracking items + PR review comment
+                        2. EVALUATE FEEDBACK  Orchestrator reads reviewer summary. For BLOCKERS:
+                                              dispatch fix agent on new isolated workspace → cycle to step 1.
+
 3. POST-MERGE         git checkout main; git pull --ff-only; git fetch --prune;
                       list remaining todos; decide next wave;
                       cleanup the merged branch's worktree.
@@ -28,7 +29,7 @@ For code PRs, dispatch a fresh reviewer per PR with a combined brief covering co
 | Spec-heavy code PR (multi-doc reading, skill invocation, architectural synthesis) | **Claude** | Spec-reading depth + `/review`/`/qa`/`/audit` skill stack. |
 | Docs-only PR (prose `*.md`) | **None — orchestrator merges** | Don't burn a code-review voice on prose. |
 | High-stakes code PR (release-blocking, security-adjacent, multi-module refactor) | **Dual: Claude + Codex parallel** | Orthogonal blocker classes. Orchestrator synthesizes before merge. |
-| Plan formalization multi-review | **Dual: Claude + Codex** + Gemini optional adversarial 3rd; skip Cursor (0/2 reliability) | Codex catches impl pragmatics; Claude catches contract drift. Neither substitutable. |
+| Plan formalization multi-review | **Dual: Claude + Codex** + Gemini adversarial 3rd | Codex catches impl pragmatics; Claude catches contract drift; Gemini finds dissenting edge cases. |
 
 You don't need dual reviews on everything — utilize Codex by default, dual for high-stakes.
 
@@ -38,33 +39,30 @@ You don't need dual reviews on everything — utilize Codex by default, dual for
 You are reviewing and potentially merging PR <URL>.
 
 ## Context
-- Origin: solo todo #<ID> — <title>. Body at `solo todos get <ID> --project-id <p>` (CLI).
+- Origin: Tracking item (e.g. solo todo) #<ID> — <title>.
 - Spec section(s): <file:line refs>
 - Counselors / prior review artefacts: <scratchpad slug / file path>
 
 ## Your job
 1. Run `/review <PR>` (or codex review) for quality, security, convention.
-2. Plan-conformance: re-read todo + spec, diff PR vs scope, flag missing/extra.
+2. Plan-conformance: re-read tracking item + spec, diff PR vs scope, flag missing/extra.
 3. Sanity tests: fetch branch, run project test command, confirm green.
 4. Decide: CLEAN / NITS / BLOCKERS.
 
 ## On CLEAN or NITS
 - Merge (rebase-merge for feature-branch targets, squash for main).
-- For NITS: open follow-up solo todo per nit with scope + rationale.
+- For NITS: open follow-up tracking item per nit with scope + rationale.
 - Delete remote branch.
 - Print merge SHA + "MERGED".
 
 ## On BLOCKERS
 - Do NOT merge.
 - Post one PR review comment summarising every blocker (file:line + required fix).
-- File a solo todo per blocker.
-- Print "BLOCKED — <count> todos filed".
+- File a tracking item per blocker.
+- Print "BLOCKED — <count> items filed".
 
 ## Rules
-- Use scribe / gh / `solo` CLI as needed. `solo` calls go through ctx_shell
-  so list/get outputs compress.
-- Write structured verdict to scratchpad `pr-<NUMBER>-review`
-  (`solo scratchpads create --project-id <p> --name pr-<N>-review --content <body>`)
-  before mutating PR state.
+- Use scribe / gh / transport CLI as needed.
+- Write structured verdict to a durable scratchpad (e.g. `pr-<NUMBER>-review`) via your transport before mutating PR state.
 - Do not push or comment anything else.
 ```

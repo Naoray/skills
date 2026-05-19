@@ -1,6 +1,6 @@
 # Portability — multi-tool sidecar adapter pattern
 
-Skills in this registry are designed to work across Claude Code, Cursor, Codex, and Gemini without per-tool branching inside `SKILL.md`. The pattern: keep the contract portable, put tool-specific UI / dependencies / invocation wiring in **adjacent sidecars**.
+Skills in this registry are designed to work across Claude Code, Codex, and Gemini without per-tool branching inside `SKILL.md`. The pattern: keep the contract portable, put tool-specific UI / dependencies / invocation wiring in **adjacent sidecars**.
 
 ## Core rule
 
@@ -14,7 +14,7 @@ Skills in this registry are designed to work across Claude Code, Cursor, Codex, 
 
 It does NOT contain:
 
-- Host-specific paths (`~/.claude/skills/...`, `.cursor/rules/...`)
+- Host-specific paths (`~/.claude/skills/...`)
 - Slash-command syntax that differs across tools
 - Approval-mechanism wording (Claude's permission prompts vs Codex YOLO vs Gemini policy)
 - MCP setup details
@@ -32,16 +32,6 @@ Tool-specific wiring goes in sidecar files.
 ```
 
 `openai.yaml` carries machine-facing UI metadata: `display_name`, `short_description`, `default_prompt`, optional icon/color. **Generate this from `SKILL.md` content — do not hand-maintain.** If the host harness consumes it, regenerate when `SKILL.md` changes. If it doesn't, omit the file entirely.
-
-### Cursor
-
-```
-.cursor/
-└── rules/
-    └── <skill-name>.mdc
-```
-
-Cursor rules live at the project root (or user root), not inside the skill folder. They are NOT the skill — they are an adapter that surfaces the skill in Cursor's UI.
 
 ### Gemini CLI
 
@@ -92,12 +82,11 @@ The skill-creator skill itself does NOT ship a Codex sidecar at this time, becau
 
 ## Evidence tier of this pattern
 
-**P** (practitioner-backed). This is the clearest cross-vendor pattern in the current ecosystem. Both OpenAI and Anthropic frame skills as "portable across tools and platforms"; both ship sidecar conventions (`agents/openai.yaml` for Codex; Cursor and Gemini have their own equivalents).
+**P** (practitioner-backed). This is the clearest cross-vendor pattern in the current ecosystem. Both OpenAI and Anthropic frame skills as "portable across tools and platforms"; both ship sidecar conventions (`agents/openai.yaml` for Codex; Gemini has its own equivalents).
 
 ## Sources
 
 - OpenAI Codex `agents/openai.yaml` reference — "intended for the machine/harness, not the agent."
 - Anthropic Agent Skills engineering post — "portable across tools and platforms."
-- Cursor skills documentation — "open standard for packaging reusable knowledge and scripts."
 - Gemini CLI custom commands documentation.
 - ChatGPT Deep Research synthesis on cross-tool portability patterns.
