@@ -40,6 +40,9 @@ catalog:
     - name: skill-creator
       source: github:Naoray/skills@main
       description: Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E/P/H) gating, and progressive disclosure. LLM- and registry-agnostic; supports scribe, .claude/skills, .ai/skills, and custom backends. Mandatory reviewer pass before declaring done.
+    - name: init-rust
+      source: github:Naoray/skills@main
+      description: "Use when initializing Rust best-practices rules in a project, the user invokes `/init-rust`, or a new Rust workspace needs convention rules wired up for an agent. Inputs - target project root, an existing or creatable `.claude/rules/` directory, and confirmation the project targets Rust edition 2024 (rules assume 2024 + MSRV 1.85). Do not use when the user wants language-agnostic project init, framework-specific scaffolding (axum, tauri, leptos, etc.), or actual code generation; use those skills or write code directly. Produces `.claude/rules/rust.md` with `paths: \"**/*.rs\"` frontmatter covering workspace layout, error handling, async/Tokio, CLI (clap), serde, tracing, type system, process supervision, security, testing, naming, tooling, and Edition 2024 changes. Escalate if `.claude/rules/rust.md` already exists with manual edits, the project is not a Rust workspace, or the user targets an edition older than 2024."
 kits:
     - name: daily-workflow
       description: Plan, capture, and close the day from inside the agent — daily-notes-driven workflow with meeting capture, session planning, running log, and end-of-day reflection.
