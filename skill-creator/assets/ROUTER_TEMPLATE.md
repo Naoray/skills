@@ -46,8 +46,13 @@ TODO list rules that span all workflows (naming conventions, output format invar
 ## Author checklist (delete before committing)
 
 - [ ] Replaced every TODO above
-- [ ] Frontmatter `name` matches folder name exactly
+- [ ] Entry file is exactly `SKILL.md` (case-sensitive)
+- [ ] Frontmatter `name` matches folder name exactly (kebab-case, no spaces, no underscores, no capitals)
+- [ ] `name` does not start with `claude` or `anthropic` (reserved prefixes)
+- [ ] No XML angle brackets `<` or `>` anywhere in frontmatter (security)
+- [ ] Description ≤1024 characters (Anthropic loader hard limit)
 - [ ] Description has all 5 trigger parts (use `references/trigger-contract.md` checklist)
+- [ ] Description mentions concrete trigger phrases and relevant file types if applicable
 - [ ] SKILL.md ≤120 lines (router-style limit)
 - [ ] No sibling `README.md`, `INSTALLATION.md`, `CHANGELOG.md`, `QUICK_REFERENCE.md` inside this folder
 - [ ] No MUST/ALWAYS/NEVER without an accompanying WHY clause

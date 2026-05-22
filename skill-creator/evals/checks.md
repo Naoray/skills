@@ -8,11 +8,13 @@ A skill must pass ALL of these before it ships. A reviewer pass (see `workflows/
 
 C1. **Folder name === frontmatter `name`.** `cat <skill>/SKILL.md` frontmatter `name:` field must equal the directory basename.
 
-C2. **Frontmatter has both `name` and `description`.** No other required fields. No `compatibility:`, no metadata blocks unless the host actually consumes them.
+C2. **Frontmatter has both `name` and `description`.** No other required fields. Optional fields `license`, `allowed-tools`, `compatibility`, `metadata` are permitted only when the host actually consumes them; otherwise omit.
 
 C3. **No sibling docs inside the skill folder.** None of these may exist at the skill root: `README.md`, `INSTALLATION.md`, `INSTALL.md`, `CHANGELOG.md`, `QUICK_REFERENCE.md`. Nested `README.md` files inside `references/<subdir>/` ARE allowed when they are part of the retrieval surface (see `references/multi-mode-skills.md`).
 
-C4. **Body length ≤500 lines hard ceiling.** Target ≤200 lines for non-router skills; router-style `SKILL.md` should be ≤120 lines. Use `wc -l <skill>/SKILL.md` to measure.
+C4. **Body length ≤500 lines hard ceiling.** Target ≤200 lines for non-router skills; router-style `SKILL.md` should be ≤120 lines. Use `wc -l <skill>/SKILL.md` to measure. Anthropic guidance: SKILL.md ≤5,000 words to avoid large-context degradation.
+
+C4a. **Entry filename is exactly `SKILL.md`** (case-sensitive). `skill.md`, `Skill.md`, `SKILL.MD` will not be loaded. `ls <skill>/` must show `SKILL.md` literally.
 
 ## Description contract checks
 
@@ -25,9 +27,13 @@ C5. **All 5 trigger parts present in `description`.** Re-read the description an
 
    Missing any part = fail.
 
-C6. **Description ≤140 words.** Long descriptions tax every invocation. `awk '/^description:/,/^---$/' SKILL.md | wc -w` (subtract the trailing `---` and `description:` literal).
+C6. **Description ≤1024 characters (loader hard limit) AND ≤140 words (readability target).** The 1024-char ceiling is Anthropic's loader rule; the 140-word target is this registry's readability heuristic. Measure chars: `awk '/^description:/,/^---$/' SKILL.md | sed 's/^description: //' | head -c 2000 | wc -c`.
 
 C7. **No "pushy" trigger language** in the description ("make sure to use", "always", "be sure to", "whenever"). Use high-recall trigger phrases + a hard disqualifier instead.
+
+C7a. **No XML angle brackets `<` or `>` in frontmatter** (`name`, `description`, `compatibility`, anywhere). Security — frontmatter is injected into Claude's system prompt and brackets can be parsed as instruction-bearing tags. Check: `awk '/^---$/{c++;next} c==1' SKILL.md | grep -E '[<>]' && echo FAIL`.
+
+C7b. **`name` does not start with `claude` or `anthropic`.** Reserved prefixes; loader will reject. Check: `awk -F': ' '/^name:/{print $2}' SKILL.md | grep -qE '^(claude|anthropic)' && echo FAIL`.
 
 ## Body content checks
 
@@ -55,6 +61,6 @@ C15. **Reviewer pass completed** before declaring done. A second agent or human 
 
 ## How to use this file
 
-When auditing a skill: walk through C1–C15 in order. Stop at the first fail and report it with a concrete fix. When all pass: report `CHECKS PASS (15/15)`.
+When auditing a skill: walk through C1–C7b, C8–C15 in order (17 checks total counting subdivisions). Stop at the first fail and report it with a concrete fix. When all pass: report `CHECKS PASS`.
 
 When refining this file: keep checks deterministic and concrete. Subjective checks ("is the description well-written?") belong in the reviewer pass, not here.

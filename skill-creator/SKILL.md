@@ -56,19 +56,29 @@ Pick the one workflow that matches the user's intent. The draft → release spli
 
 ### Naming
 
-- lowercase letters, digits, hyphens only
+- lowercase letters, digits, hyphens only (no spaces, no underscores, no capitals)
 - ≤64 characters
 - folder name === frontmatter `name`
+- entry file is exactly `SKILL.md` — **case-sensitive**. `skill.md`, `Skill.md`, `SKILL.MD` will not be loaded.
 - verb-led when the skill performs an action (`create-changelog-pr`, `evaluate-day`)
 - namespace by tool only when triggering depends on it (`gh-*`, `linear-*`, `obsidian-*`)
+- **reserved prefixes:** names starting with `claude` or `anthropic` are reserved by Anthropic and will be rejected by the loader. Why: avoids spoofed-skill confusion with built-ins.
+
+### Frontmatter
+
+Required: `name`, `description`. Optional (use only if the host consumes them): `license` (SPDX id), `allowed-tools` (restrict tool access), `compatibility` (≤500 chars env requirements), `metadata` (custom key/value pairs).
+
+**Forbidden:** XML angle brackets `<` `>` anywhere in frontmatter. Why: frontmatter is injected into Claude's system prompt; brackets become an instruction-injection vector. Rephrase or use Unicode look-alikes.
 
 ### Progressive disclosure
 
-Three loading levels:
+Three loading levels (Anthropic's canonical model):
 
-1. **Metadata** (`name` + `description`) — always in context. ≤140 words. Every token counts.
-2. **Body** — loaded when the skill triggers. ≤200 lines target, hard ceiling 500. Router-style `SKILL.md` ≤120 lines.
-3. **Bundled resources** — loaded on demand. Unlimited size; scripts execute without loading.
+1. **Metadata** (`name` + `description`) — always in context. **Hard limit ≤1024 chars** (loader-enforced). Target ≤140 words for readability.
+2. **Body** — loaded when skill triggers. ≤200 lines target, hard ceiling 500 (~5,000 words). Router-style `SKILL.md` ≤120 lines.
+3. **Bundled resources** — `scripts/`, `references/`, `assets/`. Loaded on demand. Scripts execute without loading source.
+
+Canonical layout: `SKILL.md` (required) + optional `scripts/` `references/` `assets/`. This registry also uses `workflows/` (router) and `evals/` (lightweight eval contract).
 
 If a single skill spans 3+ modes or the body crosses ~200 lines, split using the router pattern. See `references/multi-mode-skills.md`.
 
@@ -102,6 +112,8 @@ Skills move through active → merge candidate → archived. Run a registry swee
 - `references/lifecycle.md` — active / merge candidate / archived states + cadence
 - `references/portability.md` — sidecar adapter pattern (Codex / Gemini)
 - `references/registry-integration.md` — per-backend integration steps
+- `references/instruction-quality.md` — body-writing best practices (specific actionable, critical-first, deterministic scripts, model laziness)
+- `references/troubleshooting.md` — common failure modes (won't load, doesn't trigger, triggers too often, instructions ignored, large-context degradation)
 - `assets/SKILL_TEMPLATE.md` — scaffold for non-router skills
 - `assets/ROUTER_TEMPLATE.md` — scaffold for router skills with workflows/
 - `evals/trigger.csv` — this skill's own trigger evals (20 prompts, including 10 near-miss negatives)
