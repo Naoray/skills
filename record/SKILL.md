@@ -1,6 +1,6 @@
 ---
 name: record
-description: Use when the user says "/record <message>" or when a meaningful workday event needs a concise timestamped entry in today's running log. Inputs - exact message for manual entries, current date/time, daily note location, and enough context to judge whether an automatic entry is meaningful. Do not use when the user wants a full journal entry, meeting notes, or end-of-day synthesis; use writing, meeting, or evaluate-day instead. Produces one deduplicated timestamped Running Log entry in today's daily note. Escalate if the daily note path cannot be created, the entry would duplicate existing content, or automatic logging would expose sensitive content.
+description: Use when the user says "/record [message]" or when a meaningful workday event needs a concise timestamped entry in today's running log. Inputs - exact message for manual entries, current date/time, daily note location, and enough context to judge whether an automatic entry is meaningful. Do not use when the user wants a full journal entry, meeting notes, or end-of-day synthesis; use writing, meeting, or evaluate-day instead. Produces one deduplicated timestamped Running Log entry in today's daily note. Escalate if the daily note path cannot be created, the entry would duplicate existing content, or automatic logging would expose sensitive content.
 ---
 
 # Record — Running Log

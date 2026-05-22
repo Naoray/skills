@@ -43,12 +43,18 @@ TODO list 2-4 mechanical checks that prove the work is done. The user (or future
 ## Author checklist (delete before committing)
 
 - [ ] Replaced every TODO above
-- [ ] Frontmatter `name` matches folder name exactly
+- [ ] Entry file is exactly `SKILL.md` (case-sensitive — not `skill.md` / `Skill.md`)
+- [ ] Frontmatter `name` matches folder name exactly (kebab-case, no spaces, no underscores, no capitals)
+- [ ] `name` does not start with `claude` or `anthropic` (reserved prefixes)
+- [ ] No XML angle brackets `<` or `>` anywhere in frontmatter (security)
+- [ ] Description ≤1024 characters (Anthropic loader hard limit)
 - [ ] Description has all 5 trigger parts present (use the `references/trigger-contract.md` checklist)
-- [ ] Body under 200 lines (hard ceiling 500)
+- [ ] Description mentions concrete trigger phrases and relevant file types if applicable
+- [ ] Body under 200 lines (hard ceiling 500 / ~5,000 words)
 - [ ] No `README.md`, `INSTALLATION.md`, `CHANGELOG.md`, `QUICK_REFERENCE.md` inside this folder
 - [ ] No MUST/ALWAYS/NEVER without an accompanying WHY clause
 - [ ] Bundled resources justified by ≥3 expected reuses (scripts) or ≥4 worked examples (references)
+- [ ] Critical validations are bundled as scripts when divergent interpretation would break the workflow
 - [ ] Evidence tier (E / P / H) declared in body's first paragraph
 - [ ] Registry-integration step completed for the active backend (auto-discovery confirmed, OR catalog entry added to `scribe.yaml`, OR `php artisan boost:update` run, OR equivalent for your tool — see `references/registry-integration.md`)
 - [ ] Folder/name match (and catalog entry where applicable)

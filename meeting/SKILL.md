@@ -1,6 +1,6 @@
 ---
 name: meeting
-description: Use when the user says "/meeting <title>", "/meeting end", or wants live meeting note capture from raw fragments during an active meeting. Inputs - meeting title, type, attendees, active meeting state, and real-time notes or end command. Do not use when the user wants post-hoc meeting summarization, a transcript cleanup, or general note-taking outside meeting mode; use summarization or writing skills instead. Produces structured raw notes, action items, decisions, and a shareable meeting summary for review. Escalate if no title is provided, no meeting is active on end, another meeting is already active, or content appears sensitive enough to require confirmation before writing.
+description: Use when the user says "/meeting [title]", "/meeting end", or wants live meeting note capture from raw fragments during an active meeting. Inputs - meeting title, type, attendees, active meeting state, and real-time notes or end command. Do not use when the user wants post-hoc meeting summarization, a transcript cleanup, or general note-taking outside meeting mode; use summarization or writing skills instead. Produces structured raw notes, action items, decisions, and a shareable meeting summary for review. Escalate if no title is provided, no meeting is active on end, another meeting is already active, or content appears sensitive enough to require confirmation before writing.
 ---
 
 # Meeting Mode

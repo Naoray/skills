@@ -20,11 +20,13 @@ Read `references/trigger-contract.md` before drafting the description. Read `ref
 
 4. **Draft the description first** using the 5-part trigger contract (see `references/trigger-contract.md`). Refuse to proceed if any part is empty — the description IS the skill; the body is operational detail after triggering.
 
-5. **Draft the body.** Imperative voice. Match the host's preferred style (terse, verbose — check the user's global rules). Explain WHY for every non-obvious rule. Target ≤200 lines; hard ceiling 500.
+5. **Draft the body.** Imperative voice. Match the host's preferred style (terse, verbose — check the user's global rules). Explain WHY for every non-obvious rule. Target ≤200 lines; hard ceiling 500. See `references/instruction-quality.md` for specific writing patterns (critical-first, deterministic scripts vs prose, model laziness).
    - If multi-mode with 3+ modes or growing past ~200 lines: split into a router `SKILL.md` + per-mode files under `workflows/`. See `references/multi-mode-skills.md`.
    - The body's first paragraph must declare evidence tier + provenance (Basis / Source IDs / Reviewed date) — so future-revisers can tell stale citations from current ones and judge whether a tier upgrade is warranted.
 
-6. **Decide bundled resources.** Add a script only if the same code would be rewritten ≥3 times. Add a reference only for >100-line domain content or 4+ worked examples. Add an asset only for an output template. When unsure, omit.
+   **Pro tip — iterate on a single task first.** Anthropic's strongest practitioner finding: the most effective skill creators iterate on one realistic invocation until it works, then extract the winning approach into a skill. Don't draft a generalized skeleton and try to make it work; capture a known-good run and generalize after.
+
+6. **Decide bundled resources.** Add a script only if (a) the same code would be rewritten ≥3 times, OR (b) the check must be deterministic (model interpretation would diverge across runs). Add a reference only for >100-line domain content or 4+ worked examples. Add an asset only for an output template. When unsure, omit.
 
 7. **Verify mechanically against `skill-creator/evals/checks.md`.** Run C1–C15 (canonical, inherited by default). Stop at the first fail. Optionally add 0–5 skill-specific checks for domain-particular invariants and append them as C16+.
 

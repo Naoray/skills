@@ -2,6 +2,23 @@
 
 The `description` in a skill's YAML frontmatter is the **only thing always in context** across every agent invocation. It is the contract that decides whether the skill fires. Body content is not part of the trigger decision — it loads after the trigger has already fired.
 
+## Hard constraints (loader-enforced)
+
+- **≤1024 characters.** Anthropic's loader rejects longer descriptions.
+- **No XML angle brackets** `<` or `>`. Frontmatter is injected into Claude's system prompt; brackets become an instruction-injection vector.
+- **Mention file types and concrete user phrases** the user might actually say. If the skill operates on `.fig`, `.docx`, `.csv` — name them.
+- **No "pushy" language** ("make sure to use", "always", "whenever"). The trigger fires on accurate phrasing + clean disqualifiers, not on coercion.
+
+## Anthropic's canonical mental model
+
+The PDF guide frames a good description as three slots:
+
+```
+[What it does] + [When to use it (trigger conditions)] + [Key capabilities]
+```
+
+This registry's 5-part contract is a tighter form of the same idea — `What` becomes `Produces`, `When` is split into `Use when` / `Do not use when` / `Inputs`, and we add `Escalate if` for safety. Use the 5-part version. The 3-slot mental model is a quick sanity check when you're stuck.
+
 ## The five parts
 
 Weave these into a single paragraph in the order below. Do not use literal labels in the final description; readability beats schema fidelity. But every part must be present and identifiable.
@@ -66,15 +83,55 @@ Why it fails:
 
 Fix: either delete (it's a vibe, not a skill) or convert to a snippet referenced from a kit. If it must be a skill, name the actual procedure: "Use when reviewing an architecture decision record. Inputs: ADR draft + 2 alternative options considered. Produces: a marked-up critique listing trade-offs, risks, and a final recommendation. Do not use when the decision is reversible or one-week-scoped — write inline instead."
 
+## Anthropic's canonical good/bad examples
+
+From *The Complete Guide to Building Skills for Claude* (Anthropic, 2026). These are the upstream reference points — match the pattern, not the exact wording.
+
+**Good — includes trigger phrases:**
+
+```yaml
+description: Manages Linear project workflows including sprint planning, task creation, and status tracking. Use when user mentions "sprint", "Linear tasks", "project planning", or asks to "create tickets".
+```
+
+**Good — clear value proposition + trigger phrases:**
+
+```yaml
+description: End-to-end customer onboarding workflow for PayFlow. Handles account creation, payment setup, and subscription management. Use when user says "onboard new customer", "set up subscription", or "create PayFlow account".
+```
+
+**Bad — too vague:**
+
+```yaml
+description: Helps with projects.
+```
+
+**Bad — missing triggers:**
+
+```yaml
+description: Creates sophisticated multi-page documentation systems.
+```
+
+**Bad — too technical, no user-facing triggers:**
+
+```yaml
+description: Implements the Project entity model with hierarchical relationships.
+```
+
+The pattern: name the artifact, name the trigger phrases the user would actually say, name the file types or domain concepts. Skip implementation jargon.
+
 ## Final-check checklist
 
 Before saving the description, verify:
 
+- [ ] ≤1024 characters (Anthropic loader hard limit)
 - [ ] At least 2 concrete trigger phrases the user might actually say
+- [ ] Relevant file types or domain concepts named (`.fig`, "sprint", "PR", etc.)
 - [ ] Required inputs listed
 - [ ] Hard disqualifier present, with alternative form named
 - [ ] Artifact named in concrete terms (file type, shape, content)
 - [ ] At least one escalation condition
+- [ ] No XML angle brackets `<` `>` anywhere (security)
 - [ ] No "pushy" filler ("be sure to", "make sure", "always use")
 - [ ] No MUSTs without WHYs
+- [ ] `name` does not start with `claude` or `anthropic` (reserved)
 - [ ] Single paragraph; readable; matches the voice of existing registry skills
