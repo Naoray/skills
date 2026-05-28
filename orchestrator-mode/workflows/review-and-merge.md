@@ -21,6 +21,66 @@ For code PRs, dispatch a fresh reviewer per PR with a combined brief covering co
                       cleanup the merged branch's worktree.
 ```
 
+## Visual-review gate (UI-changing PRs)
+
+**Trigger:** the PR changes UI / visual output — templates, CSS, layout, fonts, rendered HTML, anything a user sees rendered. Code review (Codex/Claude code-gate) verifies contrast math, structure, and convention but **structurally cannot catch a rendered-output regression** (e.g. a mobile `<=390w` hero-title clip that passes every contrast check). Add this gate **after the code-review gate returns CLEAN and before merge.**
+
+```
+1. CODE GATE     Reviewer returns CLEAN (quality + plan-conformance) — as above.
+2. VISUAL GATE   Dispatch a Claude visual-QA delegate. It:
+                 a) renders the app / preview locally,
+                 b) captures screenshots via Playwright MCP
+                    (fall back to a cached/bundled browser if system Chrome absent),
+                 c) compares against brand / design intent at BOTH desktop
+                    AND mobile widths (e.g. 1280w + 390w),
+                 d) returns PASS or ISSUES.
+                 ISSUES: each issue + screenshot ref, filed as tracking todos.
+3. ROUTE         Merge ONLY when code-clean AND visual PASS.
+                 ISSUES → dispatch a Claude fix delegate on the SAME branch,
+                          then re-run the visual gate. Cycle until PASS.
+```
+
+Sentinel (add to the visual-QA delegate's reporting contract):
+
+| Role | Terminal sentinel |
+|---|---|
+| visual reviewer | `REVIEW DONE: <PASS\|ISSUES>` |
+
+Non-visual code PRs skip this gate. Docs-only PRs skip both gates.
+
+### Visual-QA delegate brief template
+
+```text
+<paste Reporting contract preamble from your transport guideline>
+
+You are the VISUAL-QA reviewer for PR <URL> (branch <BRANCH>).
+Do NOT merge — you only return a visual verdict.
+
+## Your job
+1. Fetch the branch + set up an isolated workspace.
+2. Render the app / preview locally (start dev server or build static preview).
+3. Capture screenshots with the Playwright MCP at BOTH desktop (e.g. 1280w)
+   AND mobile (e.g. 390w) widths. If system Chrome is absent, fall back to a
+   cached/bundled browser.
+4. Compare against brand / design intent (reference the live brand site or
+   design spec). Look for clipping, overflow, misalignment, font/scale breaks,
+   contrast-in-context, responsive regressions.
+5. Decide: PASS or ISSUES.
+
+## On PASS
+- Write verdict to a durable scratchpad (e.g. `pr-<NUMBER>-visual`).
+- Print `REVIEW DONE: PASS`.
+
+## On ISSUES
+- For each issue: file a tracking todo with description + screenshot ref + viewport.
+- Write the full verdict (with screenshot refs) to the scratchpad.
+- Print `REVIEW DONE: ISSUES` + count.
+
+## Rules
+- Do not merge, push, or comment on the PR. Verdict only.
+- Screenshots/refs live in durable state, never the repo.
+```
+
 ## Reviewer routing
 
 | Task | Default reviewer | Rationale |
