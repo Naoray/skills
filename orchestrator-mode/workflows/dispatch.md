@@ -16,6 +16,11 @@ For a coding task (file-modifying delegate).
 5. BRIEF     Deliver the full brief (see template below). If the transport
              returns bootstrap instructions (e.g. Solo's agent_instructions),
              prepend them to the first input.
+             NOTE: for a Claude TUI delegate, do NOT paste a large multiline
+             brief via send_input — it corrupts the input buffer. Park the
+             brief in a scratchpad and push a one-line pointer instead. See
+             your transport guideline (Solo: references/transports/solo/mcp.md
+             "Dispatching Claude TUI delegates"). Codex tolerates big briefs.
 6. MONITOR   Choose a signal strategy: Push (Pattern C) via your transport
              (e.g. send_input) or Pull (Timers). Push avoids false-positives
              from idle transitions. Sentinel arrives via transport push or
