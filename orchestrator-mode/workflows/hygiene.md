@@ -20,6 +20,21 @@ df -h /                          # log delta if you care
 
 Save freed-space to MemPalace as calibration data (AAAK e.g. `worktrees.purged.11+disk.freed.45gb`).
 
+## Scratchpad + todo hygiene — mechanical, orchestrator-side
+
+State surfaces accumulate across waves (`done/*` scratchpads, finished tracking todos, stale-and-vague todos) and start lying about what's live. Prune so the surfaces reflect ONLY live work. Mechanical — orchestrator does it directly, does not dispatch.
+
+Run **after harvesting a delegate (once its artifact is verified)** and **at every wave boundary**:
+
+1. **Archive harvested artifacts.** After a delegate's `done/*` scratchpad is read and its artifact (PR/commit/verdict) verified, `scratchpad_archive` it.
+2. **Close finished tracking.** Complete/close todos whose work has merged or whose verdict is filed.
+3. **Re-evaluate open todos.** Walk the open list:
+   - drop obsolete ones (superseded, abandoned, duplicated),
+   - re-prioritize the rest against the current north star / next wave,
+   - split anything stale-and-vague into concrete actionable items.
+
+Goal: a glance at scratchpads + todos shows live work only — no harvested ghosts, no dead todos.
+
 ## Slash-command hygiene delegates
 
 Both run as Claude solo delegates (slash-command-driven, no worktree needed):
