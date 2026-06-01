@@ -18,3 +18,4 @@ Accumulated lessons. Re-read at session start.
 | North star drifted; orchestrator silently picked one. | consult.md's drift check must surface the diff and ask. |
 | Cross-project worker leaks state to the orchestrator's project. | The brief MUST name the target project explicitly for tracking items and durable state. |
 | Used blocking-UI prompts (e.g. `AskUserQuestion`) while delegates in flight. | Sentinels arriving during the modal window get swallowed. Reconcile state surfaces after the modal returns; prefer plain-text questions during active dispatch. |
+| Reached for the `solo` CLI while the Solo MCP server was connected. | Prefer MCP tools whenever reachable — they preserve parent/child routing and Pattern C push callbacks. The CLI is a fallback for when MCP is unavailable (e.g. outside Solo) or for chatty reads that compress better as shell output. |

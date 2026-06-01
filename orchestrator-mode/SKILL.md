@@ -1,6 +1,6 @@
 ---
 name: orchestrator-mode
-description: "Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, Solo agents/processes, branch/worktree constraints, locked user decisions. Do not use for a direct small edit, a normal code review, or single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, state hygiene rules. Escalate on unclear scope, product direction, merge authority, destructive cleanup, or tool availability. Delegates are Solo processes: spawn via Solo MCP when inside Solo, or via `solo` CLI when outside Solo - never the in-process Task/Agent tool."
+description: "Use when the user says `/orchestrator-mode`, asks you to coordinate agents, or gives large multi-phase work needing parallel delegation, reviews, PRs, scratchpads, or handoffs. Inputs - project goal, repo context, Solo agents/processes, branch/worktree constraints, locked user decisions. Do not use for a direct small edit, a normal code review, or single-agent implementation; use focused coding/review skills instead. Produces delegation plan, agent briefs, monitoring protocol, review/merge routing, state hygiene rules. Escalate on unclear scope, product direction, merge authority, destructive cleanup, or tool availability. Delegates are Solo processes: prefer Solo MCP tools, falling back to the `solo` CLI only when MCP is unavailable - never the in-process Task/Agent tool."
 ---
 
 # Orchestrator Mode
@@ -120,7 +120,7 @@ When the user types `/orchestrator-mode`:
    - **Exists, no drift:** Acknowledge with one line. Do not re-ask the user about scope or direction.
    - **Exists, drift:** Print the diff. Ask: "Reconcile via `/north-star` refresh, or pick one for this session?"
    - **Missing:** Ask once — "No north star for this project. Derive one now via `/north-star`, skip for this session, or skip permanently?" Respect the answer; never auto-derive.
-3. Confirm transport is reachable (e.g. `solo doctor` for Solo). If unreachable, STOP and report — do not fall back to in-process coding delegates.
+3. Confirm transport is reachable. For Solo, prefer an MCP probe (`mcp__solo__whoami()` / `mcp__solo__list_projects()`); use `solo doctor` (CLI) only when MCP tools are unavailable. If unreachable by either, STOP and report — do not fall back to in-process coding delegates.
 4. Audit in-flight delegate processes via your transport's list tool + git log + open PR list.
 5. Clarify next goal if not stated. Skip this step when the loaded north star already disambiguates next-wave direction.
 6. From here: default to delegation. Edit files only under the exceptions above. Every delegate brief auto-injects the north star via the [workflows/dispatch.md](workflows/dispatch.md) brief templates.
