@@ -1,6 +1,6 @@
-# Transport: Solo (CLI)
+# Transport: Solo (CLI) — fallback
 
-Use these patterns when orchestrating from outside Solo or when performing chatty reads that benefit from compression.
+The MCP tools in [./mcp.md](./mcp.md) are the default. Use the CLI patterns below only as a fallback: when the Solo MCP server is not connected (e.g. orchestrating from outside Solo), or for chatty reads that compress better as shell output. When MCP is reachable, prefer the MCP equivalent — it preserves parent/child routing and Pattern C callbacks.
 
 ## CLI Tooling
 
