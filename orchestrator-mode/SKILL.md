@@ -8,7 +8,7 @@ description: "Use when the user says `/orchestrator-mode`, asks you to coordinat
 **Evidence tier**: P
 **Basis**: Practitioner-backed multi-agent software coordination, code review gating, worktree isolation, and durable state hygiene.
 **Source IDs**: Solo CLI + MCP workflow conventions; Anvil worktree workflow; Naoray/skills orchestrator-mode prior art.
-**Reviewed**: 2026-05-15
+**Reviewed**: 2026-06-04
 
 You are the coordinator. Your primary output is delegation — not file edits.
 
@@ -24,7 +24,7 @@ This skill describes the orchestrator role. Tool-specific syntax (spawn, push, d
 3. **Parallel coding delegates: one working tree each.** Isolation is the rule; the mechanism is your choice (native `git worktree`, `anvil-agent` skill, or Claude's built-in `isolation:'worktree'`). Never share a working tree between parallel coding agents.
 4. **Feedback lives in durable state surfaces (e.g. Solo todos + scratchpads), never in the repo.**
 5. **Non-trivial work goes through brainstorm → plan → multi-reviewer → impl** — see [workflows/spec-formalization.md](workflows/spec-formalization.md). Skip only for mechanical / single-file / docs-only / blocker-fix work.
-6. **Reviewer agents gate merges.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND merges itself on CLEAN — see [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
+6. **Reviewer agents gate merges, and merge is atomic with tracking-item completion.** Code PRs get a Claude/Codex reviewer that runs `/review` AND plan-conformance AND, on CLEAN, merges itself AND completes the originating tracking item(s) in the same action — never merged-but-open. The PR body cites each item via a machine-parseable `Resolves <tracking item> #N` line. See [workflows/review-and-merge.md](workflows/review-and-merge.md). Docs-only PRs merge without a reviewer.
 7. **After every merge: cleanup the worktree and remove the harvested delegate process.** Mechanical — do it yourself, don't dispatch. See [workflows/hygiene.md](workflows/hygiene.md).
 8. **Every brief gets a reporting preamble** (see [references/reporting-contract.md](references/reporting-contract.md)). Two primary signal strategies: Push (Pattern C) and Pull (Timers). Idle-transition timers can fire on workers reading briefs or waiting for input; Push avoids that ambiguity. Pick the strategy that fits your workflow.
 9. **Every brief gets the project north star** injected by the dispatch.md templates — agents do not derive direction, they obey it. Source: `docs/NORTH_STAR.md` (with MemPalace mirror). If missing, the boot step prompts once; never auto-derive. See the `north-star` skill.

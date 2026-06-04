@@ -11,6 +11,7 @@ Default guideline for orchestrators operating inside [Solo](https://github.com/s
 | **Identify Parent** | `mcp__solo__whoami()` (Required for worker-to-orchestrator push) |
 | **Harvest Delegate** | `mcp__solo__close_process(process_id=PID)` (Removes process from Solo) |
 | **List Agents** | `mcp__solo__list_agent_tools()` |
+| **Complete tracking item** | `mcp__solo__todo_complete(todo_id=N, project_id=<id>)` |
 
 **Note on Spawn:** `spawn_agent` returns `agent_instructions`; you **MUST** prepend this string to the delegate's first `send_input` so the child knows its own identity.
 
@@ -48,6 +49,15 @@ On terminal event (DONE/BLOCKED/MERGED):
 Order is non-negotiable: `scratchpad_write` MUST happen before `send_input`. The durable record is the safety net — if the push is swallowed (e.g. by a blocking-UI modal on the orchestrator side), the scratchpad still records the terminal event for reconciliation.
 ```
 
+## Todo completion at merge (Solo)
+
+Solo tracking items are todos. The merge-is-atomic rule in [../../../workflows/review-and-merge.md](../../../workflows/review-and-merge.md) maps to Solo as:
+
+- The coding delegate's PR body cites each originating todo with a machine-parseable line: `Resolves solo todo #N` (one per todo).
+- The merger, in the SAME terminal action as `gh pr merge --squash`, calls `mcp__solo__todo_complete(todo_id=N, project_id=<id>)` for every `#N` the PR resolves. Merge and complete are one step — never one without the other.
+- The orchestrator's post-merge hygiene re-reads those lines and verifies each `todo_complete` landed (belt-and-suspenders) — see [../../../workflows/hygiene.md](../../../workflows/hygiene.md).
+- **Automation backstop:** a GitHub merge webhook / CI job can parse `Resolves solo todo #N` from the merged PR and call `todo_complete` with no agent in the loop — the durable systemic fix. Until that exists, the merger's atomic completion + orchestrator verification are the guarantee.
+
 ## Surface Routing
 
 Prefer the MCP tool; the `solo …` CLI form is the fallback when MCP is unavailable.
@@ -55,6 +65,6 @@ Prefer the MCP tool; the `solo …` CLI form is the fallback when MCP is unavail
 | Surface | Tool (preferred) | CLI fallback | Purpose |
 |---|---|---|---|
 | **Solo scratchpad** | `mcp__solo__scratchpad_write` / `scratchpad_read` | `solo scratchpads` | Working artefacts for next-step agents. |
-| **Solo todo** | `mcp__solo__todo_create` / `todo_update` | `solo todos` | Actionable work with criteria. |
+| **Solo todo** | `mcp__solo__todo_create` / `todo_update` / `todo_complete` | `solo todos` | Actionable work with criteria. Complete atomically at merge (see above). |
 | **MemPalace** | `mempalace` MCP tools | — | Durable cross-session knowledge. |
 | **Repo `docs/`** | `Write` / `replace` | — | Shipping artefacts. |
