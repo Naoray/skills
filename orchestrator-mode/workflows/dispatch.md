@@ -92,7 +92,17 @@ Commit: `[agent] <type>(<scope>): <one-line subject>`
 ## Step N — Push + open PR
 git push -u origin HEAD
 gh pr create --base <PARENT_BRANCH> --title "<title>" \
-  --body "<summary + test plan>"
+  --body "<summary + test plan>
+
+Resolves <tracking item> #N"
+
+The PR body MUST include a machine-parseable line citing every originating
+tracking item this PR closes — one `Resolves <tracking item> #N` line per
+item (substitute your transport's concrete form per your transport guideline).
+The merger parses these to complete the items atomically with the merge, and
+the same line drives the optional CI auto-completion backstop. No `Resolves`
+line = the merger can't know what to close = a "merged-but-open" tracking item.
+Always include it.
 
 ## Rules
 - Isolated workspace only. Never edit main repo working tree.

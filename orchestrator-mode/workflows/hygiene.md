@@ -27,8 +27,9 @@ State surfaces accumulate across waves (`done/*` scratchpads, finished tracking 
 Run **after harvesting a delegate (once its artifact is verified)** and **at every wave boundary**:
 
 1. **Archive harvested artifacts.** After a delegate's `done/*` scratchpad is read and its artifact (PR/commit/verdict) verified, `scratchpad_archive` it.
-2. **Close finished tracking.** Complete/close todos whose work has merged or whose verdict is filed.
-3. **Re-evaluate open todos.** Walk the open list:
+2. **Verify originating tracking item is completed (belt-and-suspenders).** The merger is required to complete the originating tracking item(s) atomically with the merge (see [review-and-merge.md](review-and-merge.md) "Merge is atomic"). After every merge, the orchestrator CONFIRMS those items are actually marked complete — read the PR's `Resolves <tracking item> #N` lines and check each item's status. If the merger missed one, complete it now. A merged PR with a still-open originating item is a hygiene defect: fix it on sight.
+3. **Close other finished tracking.** Complete/close any remaining todos whose work has merged or whose verdict is filed but which weren't a PR's named originating item.
+4. **Re-evaluate open todos.** Walk the open list:
    - drop obsolete ones (superseded, abandoned, duplicated),
    - re-prioritize the rest against the current north star / next wave,
    - split anything stale-and-vague into concrete actionable items.

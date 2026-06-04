@@ -10,16 +10,30 @@ For code PRs, dispatch a fresh reviewer per PR with a combined brief covering co
                       b) Plan-conformance (diff PR scope vs originating todo/spec)
                       Verdict:
                         CLEAN    → merges (rebase for feature-target, squash for main)
-                                                           deletes remote branch, closes workspace
-                                                NITS     → merges + files follow-up tracking items
-                                                BLOCKERS → does NOT merge; files tracking items + PR review comment
-                        2. EVALUATE FEEDBACK  Orchestrator reads reviewer summary. For BLOCKERS:
-                                              dispatch fix agent on new isolated workspace → cycle to step 1.
+                                   + completes originating tracking item(s) IN THE SAME ACTION
+                                   + deletes remote branch, closes workspace
+                        NITS     → merges + completes originating tracking item(s)
+                                   + files follow-up tracking items for the nits
+                        BLOCKERS → does NOT merge; does NOT complete;
+                                   files tracking items + PR review comment
+2. EVALUATE FEEDBACK  Orchestrator reads reviewer summary. For BLOCKERS:
+                      dispatch fix agent on new isolated workspace → cycle to step 1.
 
 3. POST-MERGE         git checkout main; git pull --ff-only; git fetch --prune;
                       list remaining todos; decide next wave;
                       cleanup the merged branch's worktree.
 ```
+
+## Merge is atomic with tracking-item completion (HARD RULE)
+
+The agent that squash-/rebase-merges a PR MUST, **in the same terminal action**, complete the originating tracking item(s) — the merge and the completion are one indivisible step, not two. Never merge without completing; never leave a "merged-but-open" tracking item.
+
+- On **CLEAN / NITS**: merge AND complete every originating tracking item the PR resolves (one `complete` per item). NITS additionally file *new* follow-up items for the nits — those are separate from the originating item, which is still completed.
+- On **BLOCKERS**: do not merge and do not complete — the work isn't done.
+- The PR body names which items it resolves via a machine-parseable line (see [dispatch.md](dispatch.md) brief template — `Resolves <tracking item> #N`). The merger reads those lines to know exactly which items to complete.
+- Transport specifics — the concrete completion tool and the exact `Resolves` form — live in your transport guideline (Solo: [../references/transports/solo/mcp.md](../references/transports/solo/mcp.md)).
+
+> **Automation backstop (recommended, durable fix).** The agent-in-the-loop completion above is the immediate guarantee; the systemic fix is a merge-hook / CI action that parses `Resolves <tracking item> #N` from the merged PR and auto-completes the item with no agent involved. With the backstop live, the in-action completion becomes belt-and-suspenders. Until then, the merger's atomic completion + the orchestrator's post-merge verification (see [hygiene.md](hygiene.md)) are the guarantee.
 
 ## Visual-review gate (UI-changing PRs)
 
@@ -111,9 +125,13 @@ You are reviewing and potentially merging PR <URL>.
 
 ## On CLEAN or NITS
 - Merge (rebase-merge for feature-branch targets, squash for main).
-- For NITS: open follow-up tracking item per nit with scope + rationale.
+- ATOMIC: in the same action, complete every originating tracking item the PR
+  resolves (parse the `Resolves <tracking item> #N` lines from the PR body —
+  one completion per item). Never merge without completing.
+- For NITS: open follow-up tracking item per nit with scope + rationale. (These
+  are NEW items; the originating item is still completed above.)
 - Delete remote branch.
-- Print merge SHA + "MERGED".
+- Print merge SHA + completed item IDs + "MERGED".
 
 ## On BLOCKERS
 - Do NOT merge.
