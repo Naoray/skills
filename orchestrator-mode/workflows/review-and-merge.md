@@ -31,7 +31,7 @@ The agent that squash-/rebase-merges a PR MUST, **in the same terminal action**,
 - On **CLEAN / NITS**: merge AND complete every originating tracking item the PR resolves (one `complete` per item). NITS additionally file *new* follow-up items for the nits — those are separate from the originating item, which is still completed.
 - On **BLOCKERS**: do not merge and do not complete — the work isn't done.
 - The PR body names which items it resolves via a machine-parseable line (see [dispatch.md](dispatch.md) brief template — `Resolves <tracking item> #N`). The merger reads those lines to know exactly which items to complete.
-- Solo specifics (`mcp__solo__todo_complete`): [../references/transports/solo/mcp.md](../references/transports/solo/mcp.md).
+- Transport specifics — the concrete completion tool and the exact `Resolves` form — live in your transport guideline (Solo: [../references/transports/solo/mcp.md](../references/transports/solo/mcp.md)).
 
 > **Automation backstop (recommended, durable fix).** The agent-in-the-loop completion above is the immediate guarantee; the systemic fix is a merge-hook / CI action that parses `Resolves <tracking item> #N` from the merged PR and auto-completes the item with no agent involved. With the backstop live, the in-action completion becomes belt-and-suspenders. Until then, the merger's atomic completion + the orchestrator's post-merge verification (see [hygiene.md](hygiene.md)) are the guarantee.
 
