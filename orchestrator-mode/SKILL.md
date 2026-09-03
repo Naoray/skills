@@ -66,7 +66,7 @@ Outside these, push to a delegate.
 | Agent | When to pick |
 |---|---|
 | **Codex** | Default for non-visual coding. Rust/TS/Go impl, tests, refactors, mechanical changes. Code-review merge-gates. |
-| **Claude** | Coding mixed with heavy spec reading / synthesis. **Visual/frontend implementation AND visual verification** (templates, CSS, layout, fonts, rendered HTML) — taste/look judgment code review structurally can't give. Any task that needs a Claude Code slash command or skill (`/review`, `/qa`, `/brainstorming`, `/audit`, `/plan-*-review`, `/investigate`, `/cleanup`, `/document-release`). Opus 4.7 by default. |
+| **Claude** | Coding mixed with heavy spec reading / synthesis. **Visual/frontend implementation AND visual verification** (templates, CSS, layout, fonts, rendered HTML) — taste/look judgment code review structurally can't give. Any task that needs a Claude Code slash command or skill (e.g. `/code-review`, `/brainstorming`, `/cleanup`). |
 | **Gemini** | **Second-opinion & Dissent.** Adversarial reviews, fresh eyes. Standard 3rd voice for high-stakes plan reviews. |
 
 Resolve specific IDs/names at dispatch time via your transport's discovery tools. Never hardcode.

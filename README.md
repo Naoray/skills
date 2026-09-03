@@ -1,6 +1,6 @@
 # Naoray/skills
 
-**15 production-grade skills for Claude Code, Codex, and Gemini.**
+**Production-grade skills for Claude Code, Codex, and Gemini.**
  Each one earned its slot against a deterministic 15-check audit, ships with router/structure evals, and declares its evidence tier upfront — so you know whether it's empirical, practitioner-backed, or heuristic before you install.
 
 Install one. Install the catalog. Built for [Scribe](https://github.com/Naoray/scribe), works without it.

@@ -5,7 +5,7 @@ description: Use when initializing Rust best-practices rules in a project, the u
 
 # Initialize Rust Best Practices
 
-Add Rust best practices. **Follow the `/init-conventions` skill for standard file handling.**
+Add Rust best practices. If `.claude/rules/rust.md` already exists with manual edits, show the diff and get user approval before overwriting.
 
 ## Target File
 
