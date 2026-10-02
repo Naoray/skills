@@ -25,7 +25,7 @@ Pull from three sources + synthesize into one prompt:
 
 ## Output format
 
-Write a scratchpad `handoff/<project-slug>-<YYYY-MM-DD>` with structure:
+Update the project's existing current handoff by ID, or create `handoff/<project-slug>` if none exists. Read its revision first and preserve any sole-copy evidence before replacement. Keep one current routing summary; historical snapshots can remain linked artifacts rather than additional visible handoffs.
 
 ### Required sections
 
@@ -47,16 +47,16 @@ Write a scratchpad `handoff/<project-slug>-<YYYY-MM-DD>` with structure:
 ## Process
 
 1. Query `mcp__solo__whoami` for orchestrator pid.
-2. Run state queries in parallel — `list_processes`, `todo_list`, `scratchpad_list`, `gh pr list`, `gh issue list`, `mempalace_search`.
+2. Query live process and tracking metadata, open PRs/issues and relevant memory in parallel. Use known scratchpad IDs and filtered lists; read current load-bearing records, not the entire historical collection.
 3. Synthesize. Do NOT dump raw tool output — summarize.
-4. Write scratchpad `handoff/<slug>`.
+4. Update the current handoff with a revision guard, or create it once if missing. Include owners, exact heads, unresolved gates, evidence references and next actions. Link full reports instead of copying them or recursively requiring all predecessor handoffs. Preserve explicitly required full reads and unique unresolved historical evidence.
 5. Print the consumable prompt — a condensed instruction the user pastes into a new Claude Code session that starts with `/orchestrator-mode` + `/solo-orchestration` invocation + references the handoff scratchpad.
 
 ## Rules
 
 - Handoff is a READ-ONLY synthesis. Do not stop in-flight agents. Do not archive scratchpads. Do not close processes.
 - Don't echo MemPalace drawer contents into the scratchpad — just reference the drawer IDs. Keeps scratchpad small + durable.
-- Handoff scratchpad naming: `handoff/<project-slug>-<YYYY-MM-DD>`. If more than one per day, append `-hhmm`.
+- Keep one current handoff ID per project. Record the timestamp in its snapshot; a later session does not need a new pad merely because its date or orchestrator changed.
 
 ## Example trigger invocation
 

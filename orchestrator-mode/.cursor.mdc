@@ -88,6 +88,8 @@ Two primary signal strategies:
 
 Pick the strategy that fits your workflow and transport capabilities.
 
+Before dispatch and harvest, apply [references/state-surfaces.md](references/state-surfaces.md): reuse one current-state pad per active assignment, store full evidence once, and archive the verified assignment pad before closing its worker even when a parent task stays open.
+
 ## Anti-patterns
 
 Accumulated lessons live in [references/anti-patterns.md](references/anti-patterns.md). Read once at session start.

@@ -18,4 +18,6 @@ solo scratchpads create --project-id <id> --name <slug> --content <text>
 
 Add `--json` only when you need structured parsing — human-output compresses better with lean-ctx.
 
+The `scratchpads create` example is for a missing assignment record only. Otherwise update the known ID using the installed CLI's supported update command. Apply the same [record lifecycle](../../state-surfaces.md) as MCP; falling back to CLI must not create a duplicate status or terminal pad.
+
 For the default MCP-based workflow, see [./mcp.md](./mcp.md).

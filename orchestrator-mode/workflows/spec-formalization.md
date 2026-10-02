@@ -28,10 +28,11 @@ Spawn a Claude solo delegate that runs `/superpowers:writing-plans` on the brain
 Spawn ONE Claude coordinator. The coordinator owns the panel + synthesis so the orchestrator gets ONE consolidated document. Coordinator brief instructs:
 
 1. Spawn panel in parallel: Claude (deep reasoning), Codex (impl pragmatics), Gemini (dissent).
-2. Brief each panelist with the [Multi-reviewer brief template](#multi-reviewer-brief-template). Each writes to a unique durable scratchpad (e.g. `review/plan-<topic>-<agent>-r<round>`) via your transport.
+2. Brief each panelist with the [Multi-reviewer brief template](#multi-reviewer-brief-template). Assign each independent reviewer its own durable record (e.g. `review/plan-<topic>-<agent>`). Reuse it across that assignment's rounds; preserve prior verdicts as immutable evidence links, not extra visible status pads.
 3. Harvest verdicts (Pattern C — coordinator is panel's orchestrator, not the main one). Sub-agents push terminal events to their coordinator via transport-specific push signals.
 4. Synthesize into a consolidated scratchpad (e.g. `counselors/plan-<topic>`) with sections: Per-panelist verdict / Consensus blockers (≥2 voices) / Unique insights (one voice) / Recommended next step (DISPATCH IMPL / PATCH PLAN / REJECT-AND-REWRITE) / Consensus matrix.
 5. Push a signal to the main orchestrator with summary + scratchpad slug. Sentinel: `COUNSELORS DONE: <verdict>`.
+6. After each panelist's evidence and disposition are verified and linked, archive that panelist's pad and close the worker. Keep the consolidated plan visible while it has an active consumer. Do not erase dissent or substitute synthesis for required independent review.
 
 "Counselors" = user-vocab for the panel.
 
@@ -69,7 +70,7 @@ Your job is to be adversarial and find what the plan misses.
    - UNIQUE INSIGHT (your distinctive angle)
 
 ## Output
-Write verdict to a unique durable scratchpad (e.g. `plan-<topic>-review-<your-agent-name>`) via your transport. Print `DONE` and the scratchpad slug. Nothing else.
+Write the full verdict once and update your assigned durable record with its exact reference and terminal summary. Do not overwrite another reviewer's record or create a new pad for each round. Print `DONE` and the assigned record ID. Nothing else.
 
 ## Rules
 - No consensus-seeking. No hedging. State your position plainly.

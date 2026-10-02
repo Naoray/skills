@@ -26,7 +26,7 @@ State surfaces accumulate across waves (`done/*` scratchpads, finished tracking 
 
 Run **after harvesting a delegate (once its artifact is verified)** and **at every wave boundary**:
 
-1. **Archive harvested artifacts.** After a delegate's `done/*` scratchpad is read and its artifact (PR/commit/verdict) verified, `scratchpad_archive` it.
+1. **Finish the assignment's lifecycle.** Verify the report, record disposition and exact evidence references in its tracking item, archive its current-state pad, then close the worker. Apply this to any pad name, including `spawn-*-status`, not only `done/*`. A parent release remaining open is not a reason to retain a harvested worker pad. A harvested BLOCKED verdict remains a blocker in the todo; archival is not task completion. Preserve active or unharvested records and verify archived references remain readable. See [state surfaces](../references/state-surfaces.md).
 2. **Verify originating tracking item is completed (belt-and-suspenders).** The merger is required to complete the originating tracking item(s) atomically with the merge (see [review-and-merge.md](review-and-merge.md) "Merge is atomic"). After every merge, the orchestrator CONFIRMS those items are actually marked complete — read the PR's `Resolves <tracking item> #N` lines and check each item's status. If the merger missed one, complete it now. A merged PR with a still-open originating item is a hygiene defect: fix it on sight.
 3. **Close other finished tracking.** Complete/close any remaining todos whose work has merged or whose verdict is filed but which weren't a PR's named originating item.
 4. **Re-evaluate open todos.** Walk the open list:
@@ -34,7 +34,7 @@ Run **after harvesting a delegate (once its artifact is verified)** and **at eve
    - re-prioritize the rest against the current north star / next wave,
    - split anything stale-and-vague into concrete actionable items.
 
-Goal: a glance at scratchpads + todos shows live work only — no harvested ghosts, no dead todos.
+At each wave boundary, reconcile visible pads with active workers, unharvested reports and independently consumed plans. Report only unexplained records or failed archival; do not create a new cleanup scratchpad. A count increase from a new active worker can be legitimate. Never delete evidence or archive live work to force a fixed count.
 
 ## Slash-command hygiene delegates
 
@@ -50,7 +50,7 @@ Bad times: after every commit (noise); mid-active feature (conflicts).
 Run /cleanup on <repo>. Focus: completed plans under docs/plans/, stale
 docs/roadmap/ for shipped versions, outdated README sections (vs VERSION),
 orphaned fixtures/design files. Don't delete load-bearing items without
-flagging. Summary → scratchpad `cleanup-YYYY-MM-DD`.
+flagging. Summary → the existing cleanup tracking item or assigned status pad.
 ```
 
 ```text

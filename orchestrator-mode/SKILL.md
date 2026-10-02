@@ -102,7 +102,7 @@ Full sentinel vocabulary: [references/reporting-contract.md](references/reportin
 
 ## State surfaces
 
-State can live in scratchpads, todos, durable memory, or the repo. Each has one job; don't double-write. See [references/state-surfaces.md](references/state-surfaces.md) for Solo-flavored mapping.
+Before dispatch and harvest, apply [references/state-surfaces.md](references/state-surfaces.md): one current-state pad per active assignment, full evidence stored once, and verified worker pads archived during harvest even while a parent task remains open. Reuse exact IDs; do not create a new pad for each milestone or repair round.
 
 ## Tooling preference
 

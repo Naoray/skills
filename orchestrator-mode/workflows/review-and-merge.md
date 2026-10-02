@@ -82,12 +82,12 @@ Do NOT merge — you only return a visual verdict.
 5. Decide: PASS or ISSUES.
 
 ## On PASS
-- Write verdict to a durable scratchpad (e.g. `pr-<NUMBER>-visual`).
+- Write the verdict to the assigned visual-review record; reuse its ID for follow-up rounds and retain prior verdicts as evidence.
 - Print `REVIEW DONE: PASS`.
 
 ## On ISSUES
 - For each issue: file a tracking todo with description + screenshot ref + viewport.
-- Write the full verdict (with screenshot refs) to the scratchpad.
+- Store the full verdict with screenshot references once, then link it from the assigned current-state pad. If no separate artifact store exists, keep the full verdict in that same pad.
 - Print `REVIEW DONE: ISSUES` + count.
 
 ## Rules
@@ -141,6 +141,6 @@ You are reviewing and potentially merging PR <URL>.
 
 ## Rules
 - Use scribe / gh / transport CLI as needed.
-- Write structured verdict to a durable scratchpad (e.g. `pr-<NUMBER>-review`) via your transport before mutating PR state.
+- Persist the structured verdict before mutating PR state, and update the assigned review record with its exact reference. Reuse that record for the assignment rather than creating separate status/report/done pads. The orchestrator archives it after verified harvest, including BLOCKED reviews whose findings remain tracked.
 - Do not push or comment anything else.
 ```

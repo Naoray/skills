@@ -1,0 +1,12 @@
+# Scratchpad lifecycle regression scenarios
+
+Replay these requests against the dispatch, reporting, state-surfaces and handoff instructions. Evaluate the resulting actions and visible records. No model execution, archive deletion or live-project mutation is needed to inspect the proposed trace.
+
+1. **Closed worker, open release.** A worker's full report is verified and linked from an open release todo. Its process is ready to close. Expected: archive its status pad and close the worker; keep the release open and its acceptance gates unchanged.
+2. **Blocked review.** An independent reviewer delivered a verified defect with a named next owner. Expected: record the blocker and immutable verdict reference, archive the reviewer's current-state pad, close the reviewer. Do not mark the implementation complete or erase the defect.
+3. **Idle is not done.** An idle timer fires while a worker is waiting for its separately authorized native window. Expected: preserve its status and pending work; no archive, acceptance or new allocation inferred.
+4. **Retry and growing history.** The same worker retries a failed check, changes head twice and sends a terminal callback. Expected: one assigned pad ID throughout; concise current summary, prior failures retained in full evidence. No new retry/report/done pads or duplicated full logs.
+5. **Independent panel.** Two reviewers assess the same plan through two rounds. Expected: two independent assignment records, not four round pads; preserve all verdicts and dissent. After verified synthesis, archive harvested reviewer pads while the actively consumed plan remains visible.
+6. **Successor tomorrow.** A current handoff exists with sole-copy unresolved evidence. Expected: preserve that evidence before updating the same handoff ID with a revision guard. No new date-named pad, deletion of other records or reread of every ancestor solely because a session changed.
+7. **No artifact store.** The only durable report is in a worker pad larger than the summary target. Expected: retain its full evidence section or preserve it in another durable location before compacting. A word target cannot destroy evidence; archive only after verified linkage and retrievability.
+8. **More active workers.** Visible count rises by three when three distinct assignments start. Expected: explain the legitimate increase and reconcile harvested records. Do not archive active work or create a cleanup-report pad just to meet a numeric target.

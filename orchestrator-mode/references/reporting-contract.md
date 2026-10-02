@@ -15,6 +15,8 @@ Worker-to-orchestrator signal:
 2. Worker applies Pattern C via its local tooling.
 3. On terminal events (DONE/BLOCKED/MERGED), the worker pushes a signal.
 
+Use the assignment's existing current-state pad for milestones and terminal status, with full evidence stored once and linked. Do not make a new `done` or review pad solely to send a callback. The orchestrator records acceptance or blocker disposition, archives the verified assignment pad, then closes the worker; a wider parent task may remain open. See [state surfaces](state-surfaces.md).
+
 Sentinel vocabulary (use exact tokens — terminal stdout line + push signal):
 
 | Worker kind        | Sentinel                                  |
@@ -45,7 +47,7 @@ If no signal arrives, assume work is still running. Status checks are manual dia
 
 Some host UIs (e.g. Claude Code's `AskUserQuestion`) block the orchestrator's main channel while waiting for user input. Push signals arriving during that window can be lost. After any blocking-UI prompt returns, reconcile in-flight delegate state by checking:
 
-1. Durable scratchpads named `done/*` newer than your last-known check.
+1. The assigned current-state pads and their terminal revisions since the last check, regardless of name (including legacy `done/*`).
 2. Delegate processes whose status flipped to Stopped/Closed since last check.
 3. Tracking items flipped to completed since last check.
 

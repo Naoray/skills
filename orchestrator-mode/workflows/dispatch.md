@@ -11,7 +11,9 @@ For a coding task (file-modifying delegate).
 1. RESOLVE   Resolve the target agent tool id via your transport's discovery.
              NEVER hardcode IDs — they're env-specific.
 2. SCOPE     Understand task. Read spec + code. Identify file surface. Parallelisable?
-3. TRACK     Create a tracking item (e.g. Solo todo) with scope and criteria.
+3. TRACK     Reuse the tracking item with scope and criteria; create only if missing.
+             Assign one current-state pad ID per worker assignment, reusing existing
+             references. Apply ../references/state-surfaces.md before creation.
 4. SPAWN     Spawn the delegate process via your transport.
 5. BRIEF     Deliver the full brief (see template below). If the transport
              returns bootstrap instructions (e.g. Solo's agent_instructions),
@@ -30,8 +32,10 @@ For a coding task (file-modifying delegate).
              status / tracking items) before assuming work is still pending —
              push signals can be lost during the modal window.
 7. REVIEW    Verify commits, run tests, review diff + PR description.
-8. HARVEST   After the artifact is verified, harvest the delegate process
-             (close/remove) via your transport. If worktree orphaned,
+8. HARVEST   After the artifact is verified, record disposition and evidence links
+             in the tracking item, archive the assignment's status pad, then
+             close/remove the delegate. Do not wait for the parent epic to close.
+             If worktree orphaned,
              dispatch cleanup.
 ```
 
@@ -42,7 +46,7 @@ For a slash-command delegate (read-only or stateless action), use the slash-comm
 - One agent per focused task. Don't multi-stage one PTY through unrelated phases — stale context biases reasoning.
 - After harvesting a delegate, delete or archive the workspace isolation (e.g. worktree) if the agent didn't.
 - Never re-use the same PTY for two different deliverables.
-- Remove harvested processes from your transport as soon as the sentinel lands and the artifact is verified.
+- Record and archive verified worker state before removing the process. A sentinel or idle event alone does not establish acceptance.
 
 ## Workspace isolation
 
@@ -113,7 +117,7 @@ Always include it.
 
 ## Output format
 - File follow-ups via your transport's tracking tool (e.g. Solo todos).
-- Working notes for future sessions: your transport's durable surface (e.g. Solo scratchpads).
+- Update the assigned current-state pad; do not create separate progress/report/done pads. Store the full report once and link it. Preserve required evidence and unharvested findings.
 - At end: print PR URL + sentinel + push signal to orchestrator. Nothing else.
 
 Start now with Step 0.
@@ -139,7 +143,7 @@ Invoke `<SLASH_COMMAND>` with <ARGS>. Examples: `/review 123`, `/qa`, `/brainsto
 
 ## Output
 - Concise stdout summary.
-- Structured findings → your transport's durable surface (e.g. Solo scratchpads).
+- Structured findings → the assigned durable record; update its terminal state and link full evidence rather than creating another report pad.
 - Follow-ups → your transport's tracking tool (e.g. Solo todos).
 
 When done: print payload/slug (if any) + one-line verdict + sentinel.
