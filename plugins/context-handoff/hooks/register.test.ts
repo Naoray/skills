@@ -173,3 +173,32 @@ test('the lock returns when the turn ends without a completed handoff', { option
 
   expect((await $.tool.call(edit)).deny).toBeDefined()
 })
+
+test('read-only git listings and path-limited diffs still run once locked', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  for (const command of ['git diff -- src/a.php', 'git log --oneline -5 -- src/', 'git branch', 'git branch --show-current', 'git worktree list']) {
+    expect((await $.tool.call({ tool: 'Bash', command })).deny).toBeUndefined()
+  }
+})
+
+test('a namespaced skill setting only matches that exact skill', { options: { skill: 'naoray-skills:solo-handoff' } }, async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  await $.tool.call({ tool: 'Skill', skill: 'other-plugin:solo-handoff' })
+
+  expect((await $.tool.call(edit)).deny).toBeDefined()
+})
+
+test('handoff_complete is accepted right after a compaction once the warning fired', async ($, on) => {
+  on('session.usage', usageAt(0))
+  on('session.measure', ($, e) => ({ changed: e.changed }))
+  on('tool.call', answered)
+
+  await $.session.measure({ context: { window: 200_000, tokens: 110_000, percent: 55 }, rateLimits: [], changed: ['context'] })
+  const done = await $.tool.call({ tool: COMPLETE_TOOL, location: 'docs/handoffs/x.md' })
+
+  expect(done.deny).toBeUndefined()
+})
