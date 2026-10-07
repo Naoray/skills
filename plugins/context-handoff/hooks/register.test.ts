@@ -1,5 +1,5 @@
 import { expect, test } from 'claude-code/testing'
-import { DEFAULT_THRESHOLD_PERCENT as THRESHOLD_PERCENT, SUCCESSOR_PREFIX } from './register'
+import { DEFAULT_SKILL, DEFAULT_THRESHOLD_PERCENT as THRESHOLD_PERCENT, SUCCESSOR_PREFIX } from './register'
 
 const usageAt = (percent: number) => () => ({
   value: { startedAt: 0, context: { window: 200_000, tokens: percent * 2_000, percent }, rateLimits: [] },
@@ -23,7 +23,7 @@ test('at the threshold work tools are denied with handoff instructions', async (
   const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
 
   expect(ran.deny).toBeDefined()
-  expect(ran.deny).toContain('mcp__solo__spawn_agent')
+  expect(ran.deny).toContain(SUCCESSOR_PREFIX)
 })
 
 test('at the threshold read, git status and Solo tools still run', async ($, on) => {
@@ -76,13 +76,13 @@ test('after the successor spawn only Solo tools still run', async ($, on) => {
   expect(brief.deny).toBeUndefined()
 })
 
-test('without options the built-in scratchpad steps are used', async ($, on) => {
+test('an empty skill option falls back to the bundled solo-handoff skill', { options: { skill: '' } }, async ($, on) => {
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
   const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
 
-  expect(ran.deny).toContain('mcp__solo__scratchpad_write')
+  expect(ran.deny).toContain(`/${DEFAULT_SKILL} skill`)
   expect(ran.deny).toContain(`handoff limit ${THRESHOLD_PERCENT}%`)
 })
 
@@ -111,7 +111,7 @@ test('a configured skill replaces the scratchpad step', { options: { skill: '/au
   const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
 
   expect(ran.deny).toContain('/auto-handoff:handoff skill')
-  expect(ran.deny).not.toContain('mcp__solo__scratchpad_write')
+  expect(ran.deny).not.toContain(DEFAULT_SKILL)
 })
 
 test('a handoff skill can timestamp and write its file once locked', async ($, on) => {
@@ -127,4 +127,19 @@ test('a handoff skill can timestamp and write its file once locked', async ($, o
   expect(note.deny).toBeUndefined()
   expect(code.deny).toBeDefined()
   expect(chained.deny).toBeDefined()
+})
+
+test('orchestrator-handoff can read PRs and memory once locked', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const prs = await $.tool.call({ tool: 'Bash', command: 'gh pr list --author @me' })
+  const memory = await $.tool.call({ tool: 'mcp__plugin_mempalace_mempalace__mempalace_search', query: 'x' })
+  const merge = await $.tool.call({ tool: 'Bash', command: 'gh pr merge 12' })
+  const remember = await $.tool.call({ tool: 'mcp__plugin_mempalace_mempalace__mempalace_add_drawer', content: 'x' })
+
+  expect(prs.deny).toBeUndefined()
+  expect(memory.deny).toBeUndefined()
+  expect(merge.deny).toBeDefined()
+  expect(remember.deny).toBeDefined()
 })

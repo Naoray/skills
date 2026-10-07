@@ -2,9 +2,18 @@
   "name": "context-handoff",
   "version": "0.1.0",
   "description": "At a set share of context used, lock the session to a Solo handoff and successor spawn, so long sessions stop re-sending huge histories.",
-  "author": { "name": "Naoray" },
+  "author": {
+    "name": "Naoray"
+  },
   "repository": "https://github.com/Naoray/skills",
-  "keywords": ["handoff", "context", "solo", "session", "hooks"],
+  "keywords": [
+    "handoff",
+    "context",
+    "solo",
+    "session",
+    "hooks"
+  ],
+  "types": "./types/index.d.ts",
   "userConfig": {
     "threshold": {
       "type": "number",
@@ -15,8 +24,8 @@
     "skill": {
       "type": "string",
       "title": "Handoff skill",
-      "description": "Skill the session runs to write the handoff, without its slash (e.g. auto-handoff:handoff). Leave empty to write a Solo scratchpad instead.",
-      "default": ""
+      "description": "Skill the session runs to hand off, without its slash. The default is the solo-handoff skill this plugin ships, which writes the handoff and spawns a successor in Solo; name your own to replace it.",
+      "default": "context-handoff:solo-handoff"
     }
   }
 }

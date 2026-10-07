@@ -5,13 +5,14 @@ A Claude Code plugin (function hooks) that hands a long session off to a fresh o
 ## What it does
 
 - **Below the threshold (default 50% context used):** nothing. The check reads the status line's figures and costs nothing.
-- **At the threshold:** a toast and status line warn you, and the main session is locked to handoff work. Only `Read`, `Grep`, `Glob`, `ToolSearch`, `Skill`, read-only git (`status`, `log`, `diff`, `branch`, `rev-parse`, `show`, `worktree list`) and Solo MCP tools run. Every other call is refused with the handoff steps:
-  1. Write a handoff: a Solo scratchpad, or the handoff skill you configured.
-  2. Spawn the successor with `mcp__solo__spawn_agent`, named `successor-…`.
-  3. Send it a short pointer to the scratchpad with `mcp__solo__send_input`.
-  4. Report the scratchpad and successor ids, then stop.
-- **While locked, spawning any agent not named `successor-…` is refused**, so no new delegates start during a handoff.
-- **After the successor spawn,** only Solo tools still run, so the old session can brief the successor and clean up.
+- **At the threshold:** a toast and status line warn you, and the main session is locked to handoff work. Every other tool call is refused with one instruction: run the handoff skill.
+- **The bundled `solo-handoff` skill does the transfer:**
+  1. Writes the handoff to a Solo scratchpad (via `orchestrator-handoff` when the session orchestrates agents).
+  2. Spawns the successor with `mcp__solo__spawn_agent`, named `successor-…`, and briefs it with a short pointer.
+  3. Tells every running agent to report to the successor from now on, and hands over its timers.
+  4. Reports the scratchpad, the successor and the redirected agents, then stops.
+- **While locked, only handoff work runs:** `Read`, `Grep`, `Glob`, `ToolSearch`, `Skill`, `date`, read-only `git` and `gh`, MemPalace lookups, writes to a file whose path contains `handoff`, and Solo tools. Spawning any agent not named `successor-…` is refused, so no new delegates start during a handoff.
+- **After the successor spawn,** only Solo tools still run, so the old session can brief, redirect and clean up. This is remembered for the session, so a plugin reload or update never starts a second handoff.
 - **Subagents are never locked**, and the guard fails open: if the context check itself breaks, the session carries on.
 
 ## Options
@@ -19,9 +20,7 @@ A Claude Code plugin (function hooks) that hands a long session off to a fresh o
 Set them when you install, or later under `/plugin`:
 
 - **`threshold`** (default `50`): share of the context window used at which the session locks.
-- **`skill`** (default empty): the skill the session runs to write the handoff, without its slash, for example `auto-handoff:handoff`. Empty means a Solo scratchpad.
-
-While locked, the session may also run `date` and write files whose path contains `handoff`, so a handoff skill can timestamp and save its document.
+- **`skill`** (default `context-handoff:solo-handoff`): the skill the session runs to hand off, without its slash. Name your own to replace the bundled one; it must spawn its successor with a name starting `successor-`.
 
 ## Requirements
 
@@ -38,7 +37,7 @@ While locked, the session may also run `date` and write files whose path contain
 ## Caveats
 
 - **The threshold is a share of the model's window.** On a 1M-token window, 50% is about 500k tokens. Lower `threshold` to hand off sooner.
-- **Running delegates still report to the old session.** It stays open after the handoff; forward their reports to the successor, or let the successor read their Solo todos.
+- **The old session stays open** after the handoff, in case a late report reaches it; it forwards those to the successor. Close it once the redirected agents have reported.
 - **The status line's `ctx:` figure may show free context, not used context.** Check what yours shows before reading it against the threshold.
 
 ## Develop
