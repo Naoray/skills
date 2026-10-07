@@ -16,7 +16,7 @@ This often runs unattended. Ask no questions; work from what you already know. E
 
 ## Steps
 
-1. **Load the Solo tools** with ToolSearch if they are deferred: `whoami`, `scratchpad_write`, `list_processes`, `list_agent_tools`, `spawn_agent`, `send_input`, `get_process_output`, `timer_list`.
+1. **Load the Solo tools** with ToolSearch if they are deferred: `whoami`, `scratchpad_write`, `list_processes`, `list_agent_tools`, `spawn_agent`, `send_input`, `get_process_output`, `timer_list`, `timer_cancel`, and `mcp__context-handoff__handoff_complete` when the context-handoff plugin is installed.
 2. **Identify yourself** with `mcp__solo__whoami`: note your process id and project id.
 3. **Write the handoff.**
    - If this session orchestrates Solo agents (it ran `orchestrator-mode` or has delegates running), run the `orchestrator-handoff` skill and use the scratchpad it writes. Skip its last step: do not print a prompt for the user to paste.
@@ -33,6 +33,6 @@ This often runs unattended. Ask no questions; work from what you already know. E
 ## Rules
 
 - Do not stop or close running agents, and do not close your own process unless the user says so. Redirect them instead (step 6).
-- If a report still reaches you after the handoff, forward it to the successor with `mcp__solo__send_input` and do nothing else with it.
+- After step 8 this session can no longer act when the context-handoff plugin is installed, so redirect every running agent first. A report that still reaches it afterwards is not lost: the successor reads that agent's todo.
 - Never claim a successor exists until `spawn_agent` returned its process id.
 - If a step fails, report what blocked it and stop rather than improvising another transfer route.

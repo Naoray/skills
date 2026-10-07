@@ -6,7 +6,8 @@
 export type Handoff = { location: string; successor: string }
 
 /**
- * Whether the configured handoff skill is running, or the threshold toast was shown.
+ * isHandingOff: the configured skill is running (cleared when the turn ends).
+ * hasWarned: the threshold toast was shown (cleared once context drops below it).
  */
 export type HandoffFlag = boolean
 

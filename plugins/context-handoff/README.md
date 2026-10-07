@@ -6,12 +6,13 @@ The plugin only decides **when** to hand off. **How** is up to a handoff skill y
 
 ## What it does
 
-- **Below the threshold (default 50% context used):** nothing. The check reads the status line's figures and costs nothing.
-- **At the threshold:** a toast and status line warn you, and the main session is locked. It may look around (`Read`, `Grep`, `Glob`, `ToolSearch`), run `date` and read-only `git`, write a file whose path contains `handoff`, and start a skill. Everything else is refused with the handoff instructions.
-- **With a `skill` configured,** starting that skill unlocks the session, so the skill can use whatever tools its handoff needs.
+- **Below the threshold (default 50% context used):** nothing. Each tool call reads the plugin's state and the status line's context figure, both local and free of model calls.
+- **At the threshold:** a toast and status line warn you, and the main session is locked. It may look around (`Read`, `Grep`, `Glob`, `ToolSearch`), run `date`, read-only `git` (status, log, diff, show, rev-parse, branch and worktree listings), write `docs/handoffs/*.md`, and start a skill. Pipes, redirects, `$(…)` and other shell tricks are refused. Everything else is refused with the handoff instructions.
+- **With a `skill` configured,** starting that skill (plain or plugin-namespaced) unlocks the session for the rest of that turn, so the skill can use whatever tools its handoff needs. If the turn ends without a finished handoff, the lock returns; a skill that spans turns simply runs again, which unlocks again. A namespaced `skill` setting must match exactly; a bare one also matches that skill under any plugin namespace.
 - **Without one,** the session writes `docs/handoffs/<timestamp>-<slug>.md` and tells you to continue in a fresh session.
-- **The handoff ends with the plugin's `handoff_complete` tool**, which records where the handoff is and who continues. After that the session refuses every tool, so it stops spending. This is kept for the session, so a plugin reload or update never starts a second handoff.
-- **Subagents are never locked**, and the guard fails open: if the context check itself breaks, the session carries on.
+- **The handoff ends with the plugin's `handoff_complete` tool**, which records where the handoff is and who continues. Only the main session can call it, and only once a handoff is due. After that the session refuses every tool, so it stops spending. This is kept for the session, so a plugin reload or update never starts a second handoff.
+- **The warning resets** once context drops below the threshold again, e.g. after `/compact`.
+- **Subagents are never locked**, and every hook fails open: if the context check itself breaks, the session carries on.
 
 ## Options
 
@@ -33,7 +34,7 @@ For Solo, use the [`solo-handoff`](../../solo-handoff/SKILL.md) skill from this 
 
 - **The threshold is a share of the model's window.** On a 1M-token window, 50% is about 500k tokens. Lower `threshold` to hand off sooner.
 - **The status line's `ctx:` figure may show free context, not used context.** Check what yours shows before reading it against the threshold.
-- **A configured skill is trusted once started.** The plugin unlocks the session for it; the skill is responsible for finishing with `handoff_complete`.
+- **A configured skill is trusted for the turn it runs in.** The plugin unlocks the session for it; the skill is responsible for finishing with `handoff_complete`.
 
 ## Develop
 
