@@ -1,8 +1,22 @@
 {
   "name": "context-handoff",
   "version": "0.1.0",
-  "description": "At 50% context used, lock the session to a Solo handoff and successor spawn, so long sessions stop re-sending huge histories.",
-  "author": {
-    "name": "Naoray"
+  "description": "At a set share of context used, lock the session to a Solo handoff and successor spawn, so long sessions stop re-sending huge histories.",
+  "author": { "name": "Naoray" },
+  "repository": "https://github.com/Naoray/skills",
+  "keywords": ["handoff", "context", "solo", "session", "hooks"],
+  "userConfig": {
+    "threshold": {
+      "type": "number",
+      "title": "Context threshold (%)",
+      "description": "Share of the context window used at which the session locks and hands off. It is a share of the model's window: on a 1M-token window, 50 is about 500k tokens.",
+      "default": 50
+    },
+    "skill": {
+      "type": "string",
+      "title": "Handoff skill",
+      "description": "Skill the session runs to write the handoff, without its slash (e.g. auto-handoff:handoff). Leave empty to write a Solo scratchpad instead.",
+      "default": ""
+    }
   }
 }

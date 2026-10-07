@@ -1,5 +1,5 @@
 import { expect, test } from 'claude-code/testing'
-import { SUCCESSOR_PREFIX, THRESHOLD_PERCENT } from './register'
+import { DEFAULT_THRESHOLD_PERCENT as THRESHOLD_PERCENT, SUCCESSOR_PREFIX } from './register'
 
 const usageAt = (percent: number) => () => ({
   value: { startedAt: 0, context: { window: 200_000, tokens: percent * 2_000, percent }, rateLimits: [] },
@@ -74,4 +74,57 @@ test('after the successor spawn only Solo tools still run', async ($, on) => {
 
   expect(read.deny).toContain('already spawned the successor')
   expect(brief.deny).toBeUndefined()
+})
+
+test('without options the built-in scratchpad steps are used', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
+
+  expect(ran.deny).toContain('mcp__solo__scratchpad_write')
+  expect(ran.deny).toContain(`handoff limit ${THRESHOLD_PERCENT}%`)
+})
+
+test('the threshold comes from the options', { options: { threshold: 30 } }, async ($, on) => {
+  on('session.usage', usageAt(35))
+  on('tool.call', answered)
+
+  const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
+
+  expect(ran.deny).toContain('handoff limit 30%')
+})
+
+test('below a configured threshold nothing is locked', { options: { threshold: 30 } }, async ($, on) => {
+  on('session.usage', usageAt(25))
+  on('tool.call', answered)
+
+  const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
+
+  expect(ran.deny).toBeUndefined()
+})
+
+test('a configured skill replaces the scratchpad step', { options: { skill: '/auto-handoff:handoff' } }, async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
+
+  expect(ran.deny).toContain('/auto-handoff:handoff skill')
+  expect(ran.deny).not.toContain('mcp__solo__scratchpad_write')
+})
+
+test('a handoff skill can timestamp and write its file once locked', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const stamp = await $.tool.call({ tool: 'Bash', command: 'date +%Y-%m-%d-%H%M; git status --short --branch' })
+  const note = await $.tool.call({ tool: 'Write', file_path: 'docs/handoffs/2026-10-07-x.md', content: 'x' })
+  const code = await $.tool.call({ tool: 'Write', file_path: 'src/a.php', content: 'x' })
+  const chained = await $.tool.call({ tool: 'Bash', command: 'date; rm -rf build' })
+
+  expect(stamp.deny).toBeUndefined()
+  expect(note.deny).toBeUndefined()
+  expect(code.deny).toBeDefined()
+  expect(chained.deny).toBeDefined()
 })

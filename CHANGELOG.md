@@ -14,7 +14,7 @@ The contract a registry user can lean on across versions:
 ### Added
 
 - **Claude Code plugin marketplace** at `.claude-plugin/marketplace.json` (`naoray-skills`), with plugins under `plugins/`.
-- **`context-handoff` plugin**: at 50% context used, locks the main session to writing a Solo handoff and spawning a `successor-…` agent, so long sessions stop re-sending huge histories.
+- **`context-handoff` plugin**: at 50% context used, locks the main session to writing a Solo handoff and spawning a `successor-…` agent, so long sessions stop re-sending huge histories. Options: `threshold` (default 50) and `skill` (the handoff skill to run; empty means a Solo scratchpad).
 
 ## [0.1.0] — 2026-05-12
 
