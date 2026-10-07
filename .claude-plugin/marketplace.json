@@ -1,0 +1,14 @@
+{
+  "name": "naoray-skills",
+  "description": "Claude Code plugins from Naoray/skills: session hooks for multi-agent work over Solo.",
+  "owner": {
+    "name": "Naoray"
+  },
+  "plugins": [
+    {
+      "name": "context-handoff",
+      "source": "./plugins/context-handoff",
+      "description": "At 50% context used, lock the session to a Solo handoff and successor spawn."
+    }
+  ]
+}

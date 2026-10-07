@@ -1,0 +1,30 @@
+{
+  "name": "context-handoff",
+  "version": "0.1.0",
+  "description": "At a set share of context used, lock the session until it hands off through a handoff skill of your choice, so long sessions stop re-sending huge histories.",
+  "author": {
+    "name": "Naoray"
+  },
+  "repository": "https://github.com/Naoray/skills",
+  "keywords": [
+    "handoff",
+    "context",
+    "session",
+    "hooks"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "threshold": {
+      "type": "number",
+      "title": "Context threshold (%)",
+      "description": "Share of the context window used at which the session locks and hands off. It is a share of the model's window: on a 1M-token window, 50 is about 500k tokens.",
+      "default": 50
+    },
+    "skill": {
+      "type": "string",
+      "title": "Handoff skill",
+      "description": "Skill the session runs to hand off, without its slash (e.g. solo-handoff). It should end by calling the plugin's handoff_complete tool. Leave empty to write a handoff file to docs/handoffs/ and continue in a fresh session yourself.",
+      "default": ""
+    }
+  }
+}

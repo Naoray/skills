@@ -17,7 +17,7 @@ Five stackable kits cover the catalog. Each maps to one theme — pick the kits 
 |---|---|---|
 | **`daily-workflow`** | `plan-my-day`, `evaluate-day`, `session-plan`, `record`, `meeting` | Plan, capture, and close the day from inside the agent. |
 | **`release-pipeline`** | `changelog-pr`, `code-review-artifacts`, `visual-review`, `cleanup` | PR bodies, comprehension diagrams, rendered-output verification, post-ship hygiene. |
-| **`orchestration`** | `orchestrator-mode`, `orchestrator-handoff` | Multi-agent coordination over [Solo MCP](https://github.com/sublayerapp/solo); state handoff between sessions. |
+| **`orchestration`** | `orchestrator-mode`, `orchestrator-handoff`, `solo-handoff` | Multi-agent coordination over [Solo MCP](https://github.com/sublayerapp/solo); state handoff between sessions. |
 | **`methodology`** | `research-mode`, `skill-creator` | Anti-hallucination citation discipline; author your own skills with the 5-part trigger contract. |
 | **`mac-productivity`** | `apple-calendar`, `dev-browser` | Calendar.app CRUD via AppleScript + persistent-page browser automation. |
 
@@ -57,11 +57,23 @@ Then `scribe sync`. Kits stack; add or remove individual skills on top with `add
 
 - **`orchestrator-mode`** — Convert the current session into a delegating coordinator over [Solo MCP](https://github.com/sublayerapp/solo). Sets agent-selection rules (codex for coding, claude for skills/slash-commands, gemini for second-opinion & dissent), worktree-by-default isolation, and scratchpad-based feedback capture.
 - **`orchestrator-handoff`** — A paste-ready prompt for the next orchestrator session. Captures in-flight agents, scratchpads, locked decisions, open PRs, and dispatch intent so the next window starts hot.
+- **`solo-handoff`** — Moves the session to a fresh Solo agent: writes the handoff, spawns the successor, redirects running agents and timers to it. Pairs with the `context-handoff` plugin.
 
 ### Methodology (kit: `methodology`)
 
 - **`research-mode`** — Anti-hallucination mode: require citations, surface conflicts, refuse to present uncertain claims as fact. Toggleable; built for spec review and source-grounded analysis.
 - **`skill-creator`** — Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E / P / H) gating, and progressive disclosure. LLM-agnostic and registry-agnostic (scribe, `.claude/skills`, `.ai/skills`, custom backends). Mandatory reviewer pass before declaring done.
+
+## Claude Code plugins
+
+Alongside the skills, the repo is a Claude Code plugin marketplace (`naoray-skills`). Plugins live under [`plugins/`](plugins/) and are installed with Claude Code, not Scribe.
+
+```text
+/plugin marketplace add Naoray/skills
+/plugin install context-handoff@naoray-skills
+```
+
+- **`context-handoff`** — At a set share of context used (default 50%), locks the session until it hands off through a skill of your choice, so long sessions stop re-sending huge histories. Works anywhere; pair it with `solo-handoff` under Solo. See [its README](plugins/context-handoff/README.md).
 
 ## Why these skills don't misfire
 
@@ -193,10 +205,15 @@ Past consolidations:
 ├── cleanup/
 ├── orchestrator-mode/     # orchestration kit
 ├── orchestrator-handoff/
+├── solo-handoff/
 ├── research-mode/         # methodology kit
 ├── skill-creator/
 ├── apple-calendar/        # mac-productivity kit
 ├── dev-browser/
+├── plugins/               # Claude Code plugins (not Scribe skills)
+│   └── context-handoff/
+├── .claude-plugin/
+│   └── marketplace.json   # Claude Code plugin marketplace
 ├── kits/                  # kit manifests
 │   ├── daily-workflow.yaml
 │   ├── release-pipeline.yaml
