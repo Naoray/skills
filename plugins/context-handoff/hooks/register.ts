@@ -15,8 +15,9 @@ const SHELL_ESCAPE = /[|<>&`\n\r]|\$\(/
 const READ_ONLY_COMMAND = new RegExp(
   '^\\s*(' +
     'date(\\s+\\+\\S+)?' +
-    // A token is a plain argument, `-`/`--` alone, a short flag, or a long flag other than --output.
-    '|git\\s+(status|log|diff|show|rev-parse)(\\s+(--?(?=\\s|$)|[^-\\s]\\S*|-[^-\\s]\\S*|--(?!output)\\S+))*' +
+    // A token is a plain argument, `-`/`--` alone, a short flag, or a long flag other than
+    // --output or any abbreviation of it (git accepts unambiguous prefixes).
+    '|git\\s+(status|log|diff|show|rev-parse)(\\s+(--?(?=\\s|$)|[^-\\s]\\S*|-[^-\\s]\\S*|--(?!(o|ou|out|outp|outpu|output)(=|\\s|$))\\S+))*' +
     '|git\\s+branch(\\s+(--show-current|--list|--all|--remotes|-a|-r|-v|-vv))*' +
     '|git\\s+worktree\\s+list(\\s+--porcelain)?' +
     ')\\s*$',

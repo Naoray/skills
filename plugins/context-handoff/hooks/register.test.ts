@@ -127,6 +127,8 @@ test('shell tricks around the read-only commands are refused', async ($, on) => 
     'git status & rm -rf src',
     'git branch -D main',
     'git diff --output=x',
+    'git diff --outp=/tmp/x',
+    'git log --out /tmp/x',
   ]
 
   for (const command of commands) {
