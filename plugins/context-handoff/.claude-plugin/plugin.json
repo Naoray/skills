@@ -1,7 +1,7 @@
 {
   "name": "context-handoff",
   "version": "0.1.0",
-  "description": "At a set share of context used, lock the session to a Solo handoff and successor spawn, so long sessions stop re-sending huge histories.",
+  "description": "At a set share of context used, lock the session until it hands off through a handoff skill of your choice, so long sessions stop re-sending huge histories.",
   "author": {
     "name": "Naoray"
   },
@@ -9,7 +9,6 @@
   "keywords": [
     "handoff",
     "context",
-    "solo",
     "session",
     "hooks"
   ],
@@ -24,8 +23,8 @@
     "skill": {
       "type": "string",
       "title": "Handoff skill",
-      "description": "Skill the session runs to hand off, without its slash. The default is the solo-handoff skill this plugin ships, which writes the handoff and spawns a successor in Solo; name your own to replace it.",
-      "default": "context-handoff:solo-handoff"
+      "description": "Skill the session runs to hand off, without its slash (e.g. solo-handoff). It should end by calling the plugin's handoff_complete tool. Leave empty to write a handoff file to docs/handoffs/ and continue in a fresh session yourself.",
+      "default": ""
     }
   }
 }

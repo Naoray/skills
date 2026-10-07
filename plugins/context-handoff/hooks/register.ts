@@ -1,63 +1,88 @@
 import type { EngineInterface, Register } from 'claude-code'
+import type { Handoff } from '../types'
 
 export const DEFAULT_THRESHOLD_PERCENT = 50
-export const DEFAULT_SKILL = 'context-handoff:solo-handoff'
-export const SUCCESSOR_PREFIX = 'successor-'
+export const COMPLETE_TOOL_NAME = 'handoff_complete'
+export const COMPLETE_TOOL = `mcp__context-handoff__${COMPLETE_TOOL_NAME}`
 
-// Tools the main session may still use once locked: enough to inspect state,
-// load the deferred Solo tools, write the handoff and spawn the successor.
-const ALLOWED_TOOLS = new Set(['Read', 'Grep', 'Glob', 'ToolSearch', 'Skill'])
-const SOLO_TOOL = /^mcp__solo__/
-// orchestrator-handoff reads durable memory while writing its handoff.
-const MEMORY_LOOKUP = /^mcp__.*mempalace__mempalace_(search|kg_query|list_\w+|get_\w+|status)$/
-const SPAWN_TOOL = 'mcp__solo__spawn_agent'
-// Each segment of a locked Bash command must be one of these. `date` is here
-// because handoff skills (auto-handoff's among them) timestamp their file.
-const READ_ONLY_COMMAND =
-  /^\s*(date\b|git\s+(status|log|diff|branch|rev-parse|show|worktree\s+list)\b|gh\s+(pr|issue|run)\s+(list|view|status)\b)/
+// Before the handoff starts, the locked session may only look around and start
+// it. `date`, read-only git and writing a handoff file cover the built-in
+// handoff; a configured skill unlocks everything else once it is running.
+const LOOKING_TOOLS = new Set(['Read', 'Grep', 'Glob', 'ToolSearch', 'Skill'])
+const READ_ONLY_COMMAND = /^\s*(date\b|git\s+(status|log|diff|branch|rev-parse|show|worktree\s+list)\b)/
 const COMMAND_SEPARATOR = /&&|\|\||;/
-// A handoff skill writes its document somewhere named for it, e.g. docs/handoffs/.
 const HANDOFF_PATH = /handoff/i
 
-const HANDED_OFF = { plugin: 'context-handoff', key: 'hasHandedOff' } as const
+const HANDOFF = { plugin: 'context-handoff', key: 'handoff' } as const
+const HANDING_OFF = { plugin: 'context-handoff', key: 'isHandingOff' } as const
 const WARNED = { plugin: 'context-handoff', key: 'hasWarned' } as const
 
 type Settings = { threshold: number; skill: string }
+
+type CallInput = { command?: unknown; file_path?: unknown; skill?: unknown; location?: unknown; successor?: unknown }
 
 export const readSettings = (options: Record<string, unknown>): Settings => {
   const threshold = Number(options.threshold)
 
   return {
     threshold: threshold > 0 && threshold <= 100 ? threshold : DEFAULT_THRESHOLD_PERCENT,
-    skill: String(options.skill ?? '').trim().replace(/^\//, '') || DEFAULT_SKILL,
+    skill: String(options.skill ?? '').trim().replace(/^\//, ''),
   }
 }
 
-export const handoffInstructions = (percent: number, { threshold, skill }: Settings) =>
-  `Context is at ${percent}% (handoff limit ${threshold}%). Stop the current work and hand off now: ` +
-  `run the /${skill} skill with the Skill tool and follow it.\n` +
-  `A successor spawned with mcp__solo__spawn_agent must have a name starting "${SUCCESSOR_PREFIX}"; ` +
-  'any other spawn is refused, so no new delegates start during a handoff.\n' +
-  'Until the successor is spawned only Read, Grep, Glob, ToolSearch, Skill, date, read-only git and gh, ' +
-  'MemPalace lookups, writes to a handoff file and Solo tools work.'
+const builtInSteps =
+  '1. Run `date +%Y-%m-%d-%H%M; git status --short --branch`.\n' +
+  '2. Write docs/handoffs/<timestamp>-<slug>.md with: Goal, Status, Decisions, Dead ends, Files, ' +
+  'Next steps (the first specific enough to start at once), Open questions, and standing user instructions.\n' +
+  `3. Call ${COMPLETE_TOOL} with the file's path as location.\n` +
+  '4. Tell the user to continue in a fresh session from that file, then stop.'
 
-const isSuccessorSpawn = (name: unknown) => typeof name === 'string' && name.startsWith(SUCCESSOR_PREFIX)
+const skillSteps = (skill: string) =>
+  `Run the /${skill} skill with the Skill tool and follow it. ` +
+  `When the handoff is done, call ${COMPLETE_TOOL} with where the handoff is and who continues.`
+
+export const handoffInstructions = (percent: number, { threshold, skill }: Settings) =>
+  `Context is at ${percent}% (handoff limit ${threshold}%). Stop the current work and hand off now.\n` +
+  (skill === '' ? builtInSteps : skillSteps(skill))
 
 const isReadOnlyCommand = (command: unknown) =>
   typeof command === 'string' && command.split(COMMAND_SEPARATOR).every(part => READ_ONLY_COMMAND.test(part))
 
-const isAllowedWhileLocked = (tool: string, input: { command?: unknown; file_path?: unknown }) =>
-  ALLOWED_TOOLS.has(tool) ||
-  SOLO_TOOL.test(tool) ||
-  MEMORY_LOOKUP.test(tool) ||
+const isAllowedBeforeHandoff = (tool: string, input: CallInput) =>
+  LOOKING_TOOLS.has(tool) ||
   (tool === 'Bash' && isReadOnlyCommand(input.command)) ||
   (tool === 'Write' && typeof input.file_path === 'string' && HANDOFF_PATH.test(input.file_path))
 
-// Solo sets this in every agent session it starts.
-const isInSolo = async ($: EngineInterface) => (await $.env.get('SOLO_PROCESS_ID')) !== undefined
+const describeHandoff = ({ location, successor }: Handoff) =>
+  successor === '' ? location : `${location}, continued by ${successor}`
+
+async function contextPercent($: EngineInterface) {
+  return (await $.session.usage()).context.percent ?? 0
+}
 
 export const register: Register = (on, options) => {
   const settings = readSettings(options)
+
+  on('session.start', async ($, e, next) => {
+    const started = await next(e)
+
+    await $.tool.register({
+      name: COMPLETE_TOOL_NAME,
+      description:
+        'Marks this session as handed off once a handoff is written and its successor, if any, is running. ' +
+        'Call it only at the end of a handoff. Afterwards this session refuses further work.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          location: { type: 'string', description: 'Where the handoff is: a file path, a note id, a URL.' },
+          successor: { type: 'string', description: 'Who continues, e.g. a process id. Empty when a person starts it.' },
+        },
+        required: ['location'],
+      },
+    })
+
+    return started
+  })
 
   on('session.measure', async ($, e, next) => {
     const percent = e.context.percent ?? 0
@@ -68,57 +93,52 @@ export const register: Register = (on, options) => {
     }
 
     await $.state.set(WARNED, true)
-
-    if (await isInSolo($)) {
-      $.ui.toast(`Context ${percent}%: handing off to a successor session.`)
-      $.ui.status(`handoff due (${percent}%)`)
-
-      return next(e)
-    }
-
-    $.ui.toast(`Context ${percent}%: no Solo here, so no automatic handoff. Consider /compact or a fresh session.`)
+    $.ui.toast(`Context ${percent}%: handing this session off.`)
+    $.ui.status(`handoff due (${percent}%)`)
 
     return next(e)
   })
 
+  on('tool.call', { tool: COMPLETE_TOOL }, async ($, e) => {
+    const input = e as CallInput
+    const handoff = { location: String(input.location ?? ''), successor: String(input.successor ?? '') }
+
+    await $.state.set(HANDOFF, handoff)
+    $.ui.status('handed off')
+
+    return { result: `Handoff recorded: ${describeHandoff(handoff)}. Tell the user, then stop.` }
+  })
+
   on('tool.call', async ($, e, next) => {
     // Subagents and engine forks run in their own windows; only the main loop hands off.
-    if (e.agentId !== undefined) {
+    if (e.agentId !== undefined || e.tool === COMPLETE_TOOL) {
       return next(e)
     }
 
-    const { value: hasHandedOff = false } = await $.state.get(HANDED_OFF)
+    const { value: handoff } = await $.state.get(HANDOFF)
 
-    if (hasHandedOff && !SOLO_TOOL.test(e.tool) && e.tool !== 'ToolSearch') {
-      return {
-        deny: 'You already spawned the successor. Only Solo tools work now: make sure it got its brief, then report to the user and stop.',
-      }
+    if (handoff !== undefined && handoff !== null) {
+      return { deny: `This session already handed off (${describeHandoff(handoff)}). Tell the user, then stop.` }
     }
 
-    const percent = (await $.session.usage()).context.percent ?? 0
+    const { value: isHandingOff = false } = await $.state.get(HANDING_OFF)
+    const percent = await contextPercent($)
 
-    // Outside Solo nothing can spawn a successor, so a lock would never lift.
-    if (percent < settings.threshold || !(await isInSolo($))) {
+    if (isHandingOff || percent < settings.threshold) {
       return next(e)
     }
 
-    const input = e as { command?: unknown; file_path?: unknown; name?: unknown }
+    const input = e as CallInput
 
-    if (!isAllowedWhileLocked(e.tool, input)) {
-      return { deny: handoffInstructions(percent, settings) }
-    }
-
-    const isSpawn = e.tool === SPAWN_TOOL
-
-    if (isSpawn && !isSuccessorSpawn(input.name)) {
+    if (!isAllowedBeforeHandoff(e.tool, input)) {
       return { deny: handoffInstructions(percent, settings) }
     }
 
     const ran = await next(e)
 
-    if (isSpawn && ran.deny === undefined && ran.isError !== true) {
-      await $.state.set(HANDED_OFF, true)
-      $.ui.status('handed off')
+    // Once the configured skill runs, it decides which tools the handoff needs.
+    if (e.tool === 'Skill' && settings.skill !== '' && input.skill === settings.skill && ran.deny === undefined) {
+      await $.state.set(HANDING_OFF, true)
     }
 
     return ran

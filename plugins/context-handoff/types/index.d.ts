@@ -1,11 +1,17 @@
 /**
- * Session-held flags, so a hot reload or plugin update never forgets that the
- * successor already exists and starts a second handoff.
+ * Where a finished handoff went and who continues it; recorded by the
+ * handoff_complete tool. Session-held, so a hot reload or plugin update never
+ * forgets it and starts a second handoff.
+ */
+export type Handoff = { location: string; successor: string }
+
+/**
+ * Whether the configured handoff skill is running, or the threshold toast was shown.
  */
 export type HandoffFlag = boolean
 
 declare module 'claude-code' {
   interface PluginState {
-    'context-handoff': { hasHandedOff: HandoffFlag; hasWarned: HandoffFlag }
+    'context-handoff': { handoff: Handoff | null; isHandingOff: HandoffFlag; hasWarned: HandoffFlag }
   }
 }

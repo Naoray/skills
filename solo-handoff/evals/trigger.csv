@@ -1,0 +1,9 @@
+prompt,should_trigger,kind,notes
+"Hand this session off to a fresh Solo agent.",true,explicit,"Direct Solo transfer request."
+"Context is at 50%, spawn a successor and move the work over.",true,implicit,"Context-budget trigger with successor."
+"Run the solo-handoff skill and follow it.",true,explicit,"Plugin instruction."
+"Start a new orchestrator in Solo and point our running agents at it.",true,contextual,"Successor plus redirect."
+"Write a handoff scratchpad only; I'll start the next session myself.",false,near_miss,"No successor: orchestrator-handoff."
+"Give me a quick status update on the agents.",false,near_miss,"Status only."
+"Close all running agents before I leave.",false,near_miss,"Destructive lifecycle action."
+"Write a handoff document in docs/handoffs.",false,near_miss,"File handoff, no Solo transfer."
