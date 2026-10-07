@@ -1,4 +1,4 @@
-import type { Register } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
 
 export const DEFAULT_THRESHOLD_PERCENT = 50
 export const DEFAULT_SKILL = 'context-handoff:solo-handoff'
@@ -53,6 +53,9 @@ const isAllowedWhileLocked = (tool: string, input: { command?: unknown; file_pat
   (tool === 'Bash' && isReadOnlyCommand(input.command)) ||
   (tool === 'Write' && typeof input.file_path === 'string' && HANDOFF_PATH.test(input.file_path))
 
+// Solo sets this in every agent session it starts.
+const isInSolo = async ($: EngineInterface) => (await $.env.get('SOLO_PROCESS_ID')) !== undefined
+
 export const register: Register = (on, options) => {
   const settings = readSettings(options)
 
@@ -60,11 +63,20 @@ export const register: Register = (on, options) => {
     const percent = e.context.percent ?? 0
     const { value: hasWarned = false } = await $.state.get(WARNED)
 
-    if (percent >= settings.threshold && !hasWarned) {
-      await $.state.set(WARNED, true)
+    if (percent < settings.threshold || hasWarned) {
+      return next(e)
+    }
+
+    await $.state.set(WARNED, true)
+
+    if (await isInSolo($)) {
       $.ui.toast(`Context ${percent}%: handing off to a successor session.`)
       $.ui.status(`handoff due (${percent}%)`)
+
+      return next(e)
     }
+
+    $.ui.toast(`Context ${percent}%: no Solo here, so no automatic handoff. Consider /compact or a fresh session.`)
 
     return next(e)
   })
@@ -85,7 +97,8 @@ export const register: Register = (on, options) => {
 
     const percent = (await $.session.usage()).context.percent ?? 0
 
-    if (percent < settings.threshold) {
+    // Outside Solo nothing can spawn a successor, so a lock would never lift.
+    if (percent < settings.threshold || !(await isInSolo($))) {
       return next(e)
     }
 

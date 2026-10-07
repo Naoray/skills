@@ -1,4 +1,4 @@
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 import { DEFAULT_SKILL, DEFAULT_THRESHOLD_PERCENT as THRESHOLD_PERCENT, SUCCESSOR_PREFIX } from './register'
 
 const usageAt = (percent: number) => () => ({
@@ -7,7 +7,10 @@ const usageAt = (percent: number) => () => ({
 
 const answered = () => ({ result: 'ok' })
 
+const inSolo = (on: Parameters<typeof mock.env>[0]) => mock.env(on, { SOLO_PROCESS_ID: '42' })
+
 test('below the threshold every tool runs', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT - 1))
   on('tool.call', answered)
 
@@ -17,6 +20,7 @@ test('below the threshold every tool runs', async ($, on) => {
 })
 
 test('at the threshold work tools are denied with handoff instructions', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -27,6 +31,7 @@ test('at the threshold work tools are denied with handoff instructions', async (
 })
 
 test('at the threshold read, git status and Solo tools still run', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT + 10))
   on('tool.call', answered)
 
@@ -36,6 +41,7 @@ test('at the threshold read, git status and Solo tools still run', async ($, on)
 })
 
 test('a mutating bash command is denied once locked', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -45,6 +51,7 @@ test('a mutating bash command is denied once locked', async ($, on) => {
 })
 
 test('subagents are never locked', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(95))
   on('tool.call', answered)
 
@@ -54,6 +61,7 @@ test('subagents are never locked', async ($, on) => {
 })
 
 test('once locked, spawning a delegate is refused and does not count as the handoff', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -65,6 +73,7 @@ test('once locked, spawning a delegate is refused and does not count as the hand
 })
 
 test('after the successor spawn only Solo tools still run', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -77,6 +86,7 @@ test('after the successor spawn only Solo tools still run', async ($, on) => {
 })
 
 test('an empty skill option falls back to the bundled solo-handoff skill', { options: { skill: '' } }, async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -87,6 +97,7 @@ test('an empty skill option falls back to the bundled solo-handoff skill', { opt
 })
 
 test('the threshold comes from the options', { options: { threshold: 30 } }, async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(35))
   on('tool.call', answered)
 
@@ -96,6 +107,7 @@ test('the threshold comes from the options', { options: { threshold: 30 } }, asy
 })
 
 test('below a configured threshold nothing is locked', { options: { threshold: 30 } }, async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(25))
   on('tool.call', answered)
 
@@ -105,6 +117,7 @@ test('below a configured threshold nothing is locked', { options: { threshold: 3
 })
 
 test('a configured skill replaces the scratchpad step', { options: { skill: '/auto-handoff:handoff' } }, async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -115,6 +128,7 @@ test('a configured skill replaces the scratchpad step', { options: { skill: '/au
 })
 
 test('a handoff skill can timestamp and write its file once locked', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -130,6 +144,7 @@ test('a handoff skill can timestamp and write its file once locked', async ($, o
 })
 
 test('orchestrator-handoff can read PRs and memory once locked', async ($, on) => {
+  inSolo(on)
   on('session.usage', usageAt(THRESHOLD_PERCENT))
   on('tool.call', answered)
 
@@ -142,4 +157,13 @@ test('orchestrator-handoff can read PRs and memory once locked', async ($, on) =
   expect(memory.deny).toBeUndefined()
   expect(merge.deny).toBeDefined()
   expect(remember.deny).toBeDefined()
+})
+
+test('outside Solo the session is never locked, since no successor could be spawned', async ($, on) => {
+  on('session.usage', usageAt(95))
+  on('tool.call', answered)
+
+  const ran = await $.tool.call({ tool: 'Edit', file_path: 'a.php', old_string: 'a', new_string: 'b' })
+
+  expect(ran.deny).toBeUndefined()
 })

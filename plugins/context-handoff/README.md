@@ -13,6 +13,7 @@ A Claude Code plugin (function hooks) that hands a long session off to a fresh o
   4. Reports the scratchpad, the successor and the redirected agents, then stops.
 - **While locked, only handoff work runs:** `Read`, `Grep`, `Glob`, `ToolSearch`, `Skill`, `date`, read-only `git` and `gh`, MemPalace lookups, writes to a file whose path contains `handoff`, and Solo tools. Spawning any agent not named `successor-…` is refused, so no new delegates start during a handoff.
 - **After the successor spawn,** only Solo tools still run, so the old session can brief, redirect and clean up. This is remembered for the session, so a plugin reload or update never starts a second handoff.
+- **Only Solo sessions lock.** Outside Solo (no `SOLO_PROCESS_ID`) nothing could spawn a successor, so the plugin only shows a toast suggesting `/compact` or a fresh session.
 - **Subagents are never locked**, and the guard fails open: if the context check itself breaks, the session carries on.
 
 ## Options
