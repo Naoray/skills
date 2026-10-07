@@ -1,32 +1,42 @@
 import type { EngineInterface, Register } from 'claude-code'
-import type { Handoff } from '../types'
+import type { Guard, Handoff } from '../types'
 
 export const DEFAULT_THRESHOLD_PERCENT = 50
 export const COMPLETE_TOOL_NAME = 'handoff_complete'
 export const COMPLETE_TOOL = `mcp__context-handoff__${COMPLETE_TOOL_NAME}`
 
 // Before the handoff starts, the locked session may only look around and start
-// it. `date`, read-only git and writing a handoff file cover the built-in
-// handoff; a configured skill unlocks everything else once it is running.
+// it. `date`, read-only git and writing docs/handoffs/*.md cover the built-in
+// handoff; a configured skill unlocks everything else while it runs.
 const LOOKING_TOOLS = new Set(['Read', 'Grep', 'Glob', 'ToolSearch', 'Skill'])
-const READ_ONLY_COMMAND = /^\s*(date\b|git\s+(status|log|diff|branch|rev-parse|show|worktree\s+list)\b)/
 const COMMAND_SEPARATOR = /&&|\|\||;/
-const HANDOFF_PATH = /handoff/i
+// Pipes, redirects, background jobs, newlines and substitutions could hide any command.
+const SHELL_ESCAPE = /[|<>&`\n\r]|\$\(/
+const READ_ONLY_COMMAND = /^\s*(date(\s+\+\S+)?|git\s+(status|log|diff|show|rev-parse)(\s+[^-\s]\S*|\s+-[^-]\S*|\s+--(?!output)\S+)*)\s*$/
+const HANDOFF_FILE = /(^|\/)docs\/handoffs\/[^/]+\.md$/
 
-const HANDOFF = { plugin: 'context-handoff', key: 'handoff' } as const
-const HANDING_OFF = { plugin: 'context-handoff', key: 'isHandingOff' } as const
-const WARNED = { plugin: 'context-handoff', key: 'hasWarned' } as const
+const GUARD = { plugin: 'context-handoff', key: 'guard' } as const
+const NO_GUARD: Guard = { handoff: null, isHandingOff: false, hasWarned: false }
 
 type Settings = { threshold: number; skill: string }
 
 type CallInput = { command?: unknown; file_path?: unknown; skill?: unknown; location?: unknown; successor?: unknown }
+
+const normalizeSkill = (name: unknown) => String(name ?? '').trim().replace(/^\//, '')
+
+// Plugin skills are namespaced (`naoray-skills:solo-handoff`); compare by the bare name too.
+const isSameSkill = (called: unknown, configured: string) => {
+  const name = normalizeSkill(called)
+
+  return name === configured || name.split(':').pop() === configured.split(':').pop()
+}
 
 export const readSettings = (options: Record<string, unknown>): Settings => {
   const threshold = Number(options.threshold)
 
   return {
     threshold: threshold > 0 && threshold <= 100 ? threshold : DEFAULT_THRESHOLD_PERCENT,
-    skill: String(options.skill ?? '').trim().replace(/^\//, ''),
+    skill: normalizeSkill(options.skill),
   }
 }
 
@@ -46,15 +56,26 @@ export const handoffInstructions = (percent: number, { threshold, skill }: Setti
   (skill === '' ? builtInSteps : skillSteps(skill))
 
 const isReadOnlyCommand = (command: unknown) =>
-  typeof command === 'string' && command.split(COMMAND_SEPARATOR).every(part => READ_ONLY_COMMAND.test(part))
+  typeof command === 'string' &&
+  command.split(COMMAND_SEPARATOR).every(part => !SHELL_ESCAPE.test(part) && READ_ONLY_COMMAND.test(part))
 
 const isAllowedBeforeHandoff = (tool: string, input: CallInput) =>
   LOOKING_TOOLS.has(tool) ||
   (tool === 'Bash' && isReadOnlyCommand(input.command)) ||
-  (tool === 'Write' && typeof input.file_path === 'string' && HANDOFF_PATH.test(input.file_path))
+  (tool === 'Write' && typeof input.file_path === 'string' && HANDOFF_FILE.test(input.file_path))
 
 const describeHandoff = ({ location, successor }: Handoff) =>
   successor === '' ? location : `${location}, continued by ${successor}`
+
+async function readGuard($: EngineInterface): Promise<Guard> {
+  const { value } = await $.state.get(GUARD)
+
+  return value ?? NO_GUARD
+}
+
+async function writeGuard($: EngineInterface, guard: Guard) {
+  await $.state.set(GUARD, guard)
+}
 
 async function contextPercent($: EngineInterface) {
   return (await $.session.usage()).context.percent ?? 0
@@ -85,25 +106,63 @@ export const register: Register = (on, options) => {
   })
 
   on('session.measure', async ($, e, next) => {
-    const percent = e.context.percent ?? 0
-    const { value: hasWarned = false } = await $.state.get(WARNED)
+    const percent = e.context.percent
 
-    if (percent < settings.threshold || hasWarned) {
+    // Right after a compaction the figure is missing until the next response.
+    if (percent === undefined) {
       return next(e)
     }
 
-    await $.state.set(WARNED, true)
+    const guard = await readGuard($)
+
+    if (percent < settings.threshold && guard.hasWarned) {
+      await writeGuard($, { ...guard, hasWarned: false })
+      $.ui.status(undefined)
+
+      return next(e)
+    }
+
+    if (percent < settings.threshold || guard.hasWarned) {
+      return next(e)
+    }
+
+    await writeGuard($, { ...guard, hasWarned: true })
     $.ui.toast(`Context ${percent}%: handing this session off.`)
     $.ui.status(`handoff due (${percent}%)`)
 
     return next(e)
   })
 
+  // A skill that stopped without completing the handoff must not leave the guard off.
+  on('turn.complete', async ($, e, next) => {
+    if (e.agentId !== undefined) {
+      return next(e)
+    }
+
+    const guard = await readGuard($)
+
+    if (guard.isHandingOff) {
+      await writeGuard($, { ...guard, isHandingOff: false })
+    }
+
+    return next(e)
+  })
+
   on('tool.call', { tool: COMPLETE_TOOL }, async ($, e) => {
+    if (e.agentId !== undefined) {
+      return { deny: 'Only the main session can complete its own handoff.' }
+    }
+
+    const guard = await readGuard($)
+
+    if (!guard.isHandingOff && (await contextPercent($)) < settings.threshold) {
+      return { deny: 'No handoff is due: the context is below the handoff limit.' }
+    }
+
     const input = e as CallInput
     const handoff = { location: String(input.location ?? ''), successor: String(input.successor ?? '') }
 
-    await $.state.set(HANDOFF, handoff)
+    await writeGuard($, { ...guard, handoff, isHandingOff: false })
     $.ui.status('handed off')
 
     return { result: `Handoff recorded: ${describeHandoff(handoff)}. Tell the user, then stop.` }
@@ -115,16 +174,19 @@ export const register: Register = (on, options) => {
       return next(e)
     }
 
-    const { value: handoff } = await $.state.get(HANDOFF)
+    const guard = await readGuard($)
 
-    if (handoff !== undefined && handoff !== null) {
-      return { deny: `This session already handed off (${describeHandoff(handoff)}). Tell the user, then stop.` }
+    if (guard.handoff !== null) {
+      return { deny: `This session already handed off (${describeHandoff(guard.handoff)}). Tell the user, then stop.` }
     }
 
-    const { value: isHandingOff = false } = await $.state.get(HANDING_OFF)
+    if (guard.isHandingOff) {
+      return next(e)
+    }
+
     const percent = await contextPercent($)
 
-    if (isHandingOff || percent < settings.threshold) {
+    if (percent < settings.threshold) {
       return next(e)
     }
 
@@ -136,9 +198,9 @@ export const register: Register = (on, options) => {
 
     const ran = await next(e)
 
-    // Once the configured skill runs, it decides which tools the handoff needs.
-    if (e.tool === 'Skill' && settings.skill !== '' && input.skill === settings.skill && ran.deny === undefined) {
-      await $.state.set(HANDING_OFF, true)
+    // Once the configured skill runs, it decides which tools the handoff needs, until the turn ends.
+    if (e.tool === 'Skill' && settings.skill !== '' && isSameSkill(input.skill, settings.skill) && ran.deny === undefined) {
+      await writeGuard($, { ...guard, isHandingOff: true })
     }
 
     return ran
