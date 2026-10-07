@@ -7,12 +7,12 @@ The plugin only decides **when** to hand off. **How** is up to a handoff skill y
 ## What it does
 
 - **Below the threshold (default 50% context used):** nothing. Each tool call reads the plugin's state and the status line's context figure, both local and free of model calls.
-- **At the threshold:** a toast and status line warn you, and the main session is locked. It may look around (`Read`, `Grep`, `Glob`, `ToolSearch`), run `date` and read-only `git`, write `docs/handoffs/*.md`, and start a skill. Pipes, redirects, `$(…)` and other shell tricks are refused. Everything else is refused with the handoff instructions.
-- **With a `skill` configured,** starting that skill (plain or plugin-namespaced) unlocks the session for the rest of that turn, so the skill can use whatever tools its handoff needs. If the turn ends without a finished handoff, the lock returns.
+- **At the threshold:** a toast and status line warn you, and the main session is locked. It may look around (`Read`, `Grep`, `Glob`, `ToolSearch`), run `date`, read-only `git` (status, log, diff, show, rev-parse, branch and worktree listings), write `docs/handoffs/*.md`, and start a skill. Pipes, redirects, `$(…)` and other shell tricks are refused. Everything else is refused with the handoff instructions.
+- **With a `skill` configured,** starting that skill (plain or plugin-namespaced) unlocks the session for the rest of that turn, so the skill can use whatever tools its handoff needs. If the turn ends without a finished handoff, the lock returns; a skill that spans turns simply runs again, which unlocks again. A namespaced `skill` setting must match exactly; a bare one also matches that skill under any plugin namespace.
 - **Without one,** the session writes `docs/handoffs/<timestamp>-<slug>.md` and tells you to continue in a fresh session.
 - **The handoff ends with the plugin's `handoff_complete` tool**, which records where the handoff is and who continues. Only the main session can call it, and only once a handoff is due. After that the session refuses every tool, so it stops spending. This is kept for the session, so a plugin reload or update never starts a second handoff.
 - **The warning resets** once context drops below the threshold again, e.g. after `/compact`.
-- **Subagents are never locked**, and the guard fails open: if the context check itself breaks, the session carries on.
+- **Subagents are never locked**, and every hook fails open: if the context check itself breaks, the session carries on.
 
 ## Options
 
