@@ -63,6 +63,17 @@ Then `scribe sync`. Kits stack; add or remove individual skills on top with `add
 - **`research-mode`** — Anti-hallucination mode: require citations, surface conflicts, refuse to present uncertain claims as fact. Toggleable; built for spec review and source-grounded analysis.
 - **`skill-creator`** — Author or revise an AI-agent skill using the 5-part trigger contract, evidence-tier (E / P / H) gating, and progressive disclosure. LLM-agnostic and registry-agnostic (scribe, `.claude/skills`, `.ai/skills`, custom backends). Mandatory reviewer pass before declaring done.
 
+## Claude Code plugins
+
+Alongside the skills, the repo is a Claude Code plugin marketplace (`naoray-skills`). Plugins live under [`plugins/`](plugins/) and are installed with Claude Code, not Scribe.
+
+```text
+/plugin marketplace add Naoray/skills
+/plugin install context-handoff@naoray-skills
+```
+
+- **`context-handoff`** — At 50% context used, locks the session to writing a Solo handoff and spawning a `successor-…` agent, so long sessions stop re-sending huge histories. See [its README](plugins/context-handoff/README.md).
+
 ## Why these skills don't misfire
 
 Every skill in this catalog ships with two things most don't:
@@ -197,6 +208,10 @@ Past consolidations:
 ├── skill-creator/
 ├── apple-calendar/        # mac-productivity kit
 ├── dev-browser/
+├── plugins/               # Claude Code plugins (not Scribe skills)
+│   └── context-handoff/
+├── .claude-plugin/
+│   └── marketplace.json   # Claude Code plugin marketplace
 ├── kits/                  # kit manifests
 │   ├── daily-workflow.yaml
 │   ├── release-pipeline.yaml

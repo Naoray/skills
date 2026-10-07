@@ -3,3 +3,4 @@
 .codex/
 .scribe.yaml
 .DS_Store
+plugins/*/.claude-plugin/types/
